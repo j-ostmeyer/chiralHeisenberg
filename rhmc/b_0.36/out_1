@@ -1,0 +1,52 @@
+ seed:    103570379636736.00     
+ ksize= 12 ksizet= 12
+ kthird=  8
+ time step: dt=0.1000 trajectory length= 1.000000
+ # trajectories=  2500 beta= 0.360000
+ am3=1.0000 am=0.0000
+ imass= 1
+ Stopping residuals: guidance: .1000E-05 acceptance: .1000E-08 estimator: .1000E-05
+ seed:    79431338033152.000     
+ averages for last   2500 trajectories
+  # of acceptances:   2313 average trajectory length=    1.003
+  <exp-dH>= 0.1010E+01 +/- 0.437E-02
+  av. # QMR itr. guidance:   629.184; acceptance:   819.310
+  force:   649.625; pseudofermion:   828.842
+
+  measurement:     0.000
+
+  condmod=  0.259E+00 susc=  0.123E+03
+ cond components=  0.281E-01 -0.105E-01 -0.309E-01
+  psibarpsi=  0.000E+00
+  mean square velocity= 0.300E+01; action per site= 0.656E+02
+
+
+
+
+ seed:    177963558502400.00     
+ seed:    177963558502400.00     
+ ksize= 12 ksizet= 12
+ kthird=  8
+ time step: dt=0.1100 trajectory length= 0.990000
+ # trajectories=  2500 beta= 0.360000
+ am3=1.0000 am=0.0000
+ imass= 1
+ Stopping residuals: guidance: .1000E-05 acceptance: .1000E-08 estimator: .1000E-05
+ seed:    210005105049600.00     
+ averages for last   2500 trajectories
+  # of acceptances:   2264 average trajectory length=    0.987
+  <exp-dH>= 0.9931E+00 +/- 0.503E-02
+  av. # QMR itr. guidance:   629.471; acceptance:   808.389
+  force:   649.945; pseudofermion:   815.338
+
+  measurement:     0.000
+
+  condmod=  0.266E+00 susc=  0.127E+03
+ cond components=  0.633E-01  0.260E-01 -0.624E-01
+  psibarpsi=  0.000E+00
+  mean square velocity= 0.299E+01; action per site= 0.656E+02
+
+
+
+
+ seed:    37787666481152.000     

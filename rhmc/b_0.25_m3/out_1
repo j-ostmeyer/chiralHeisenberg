@@ -1,0 +1,78 @@
+ seed:    43664087711744.000     
+ ksize= 12 ksizet= 12
+ kthird=  8
+ time step: dt=0.1100 trajectory length= 0.990000
+ # trajectories=   500 beta= 0.250000
+ am3=1.0000 am=0.0000
+ imass= 3
+ Stopping residuals: guidance: .1000E-05 acceptance: .1000E-08 estimator: .1000E-05
+ seed:    130339564421120.00     
+ averages for last    500 trajectories
+  # of acceptances:    467 average trajectory length=    0.966
+  <exp-dH>= 0.9818E+00 +/- 0.824E-02
+  av. # QMR itr. guidance:   543.797; acceptance:   713.420
+  force:   552.919; pseudofermion:   717.478
+
+  measurement:     0.000
+
+  condmod=  0.650E+00 susc=  0.737E+03
+ cond components= -0.281E+00  0.476E+00 -0.101E+00
+  psibarpsi=  0.000E+00
+  mean square velocity= 0.300E+01; action per site= 0.658E+02
+
+
+
+
+ seed:    221097302687744.00     
+ seed:    221097302687744.00     
+ ksize= 12 ksizet= 12
+ kthird=  8
+ time step: dt=0.1100 trajectory length= 0.990000
+ # trajectories=  2500 beta= 0.250000
+ am3=1.0000 am=0.0000
+ imass= 3
+ Stopping residuals: guidance: .1000E-05 acceptance: .1000E-08 estimator: .1000E-05
+ seed:    45250218295296.000     
+ averages for last   2500 trajectories
+  # of acceptances:   2320 average trajectory length=    0.998
+  <exp-dH>= 0.9974E+00 +/- 0.370E-02
+  av. # QMR itr. guidance:   512.382; acceptance:   658.759
+  force:   519.719; pseudofermion:   660.777
+
+  measurement:     0.000
+
+  condmod=  0.675E+00 susc=  0.795E+03
+ cond components=  0.201E+00  0.256E+00 -0.315E+00
+  psibarpsi=  0.000E+00
+  mean square velocity= 0.300E+01; action per site= 0.658E+02
+
+
+
+
+ seed:    230598470795264.00     
+ seed:    230598470795264.00     
+ ksize= 12 ksizet= 12
+ kthird=  8
+ time step: dt=0.1100 trajectory length= 0.990000
+ # trajectories=  2000 beta= 0.250000
+ am3=1.0000 am=0.0000
+ imass= 3
+ Stopping residuals: guidance: .1000E-05 acceptance: .1000E-08 estimator: .1000E-05
+ seed:    198623462686720.00     
+ averages for last   2000 trajectories
+  # of acceptances:   1846 average trajectory length=    0.977
+  <exp-dH>= 0.9988E+00 +/- 0.425E-02
+  av. # QMR itr. guidance:   507.237; acceptance:   657.576
+  force:   514.273; pseudofermion:   660.976
+
+  measurement:     0.000
+
+  condmod=  0.689E+00 susc=  0.826E+03
+ cond components=  0.280E+00  0.103E+00 -0.528E+00
+  psibarpsi=  0.000E+00
+  mean square velocity= 0.300E+01; action per site= 0.658E+02
+
+
+
+
+ seed:    161151580110848.00     

@@ -11,12 +11,13 @@ fort.*
 **.swp
 **.optrpt
 compile_flags
-bulk_rhmc
-bulk_rhmc.f
+mh/cheisdwf_hmc
+rhmc/cheisdwf
 run???/
 *.out
 *.err
 time*txt
+*.csv
 *.tar
 playground
 comms4_sp.F90

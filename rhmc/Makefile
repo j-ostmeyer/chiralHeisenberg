@@ -4,7 +4,7 @@ FC = gfortran
 MYFILES=
 
 FCFLAGS += -Wno-unused-label -Wno-unused-dummy-argument -Wno-unused-variable
-FCFLAGS += -fdefault-real-8
+#FCFLAGS += -fdefault-real-8
 
 all: cheisdwf
 

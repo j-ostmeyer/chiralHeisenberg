@@ -583,7 +583,7 @@ c
       enddo
       beta=0.0
       do i=1,kferm
-         beta=beta+conjg(r(i))*r(i)
+         beta=beta + real(r(i))**2 + aimag(r(i))**2
       enddo
       beta=sqrt(beta)
       phimod=beta
@@ -614,7 +614,7 @@ c
       beta0=beta
       beta=0.0
       do i=1,kferm
-         beta=beta+conjg(r(i))*r(i)
+         beta=beta + real(r(i))**2 + aimag(r(i))**2
       enddo
       beta=sqrt(beta)
 c
@@ -833,7 +833,7 @@ c
       call dslashd(x1,x2,chi,am,imass)
       do i=1,kferm
       vtild(i)=x1(i)+aden(idiag)*x3(i)-Phi(i)
-      residual=residual+conjg(vtild(i))*vtild(i)
+      residual=residual + real(vtild(i))**2 + aimag(vtild(i))**2
       enddo
       if(residual.gt.resmax) resmax=residual
 c
@@ -889,7 +889,7 @@ c   alpha=(r,r)/(p,(Mdagger)Mp)
 c 
       alphad=0.0
       do 31 i=1,kferm
-      alphad=alphad+conjg(x1(i))*x1(i)
+      alphad=alphad + real(x1(i))**2 + aimag(x1(i))**2
 31    continue
       alpha=alphan/alphad
 c      
@@ -914,7 +914,7 @@ c   beta=(r_k+1,r_k+1)/(r_k,r_k)
 c
       betan=0.0 
       do 61 i=1,kferm
-      betan=betan+conjg(r(i))*r(i) 
+      betan=betan + real(r(i))**2 + aimag(r(i))**2 
 61    continue 
       beta=betan/betad
       betad=betan

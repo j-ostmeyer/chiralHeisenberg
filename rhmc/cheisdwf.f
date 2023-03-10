@@ -2253,3 +2253,796 @@ cc
 c
       return
       end
+c***********************************************************************
+      subroutine dslash_v2(Phi,R,chi,am,imass)
+c
+c     calculates Phi = M*R
+c
+      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(akappa=0.5)
+      common/para/beta,am3,ibound
+      real chi(ksize,ksize,ksizet,3)
+      complex spm(ksize,ksize,ksizet)
+      complex Phi(kthird,ksize,ksize,ksizet,4,2),
+     &   R(kthird,ksize,ksize,ksizet,4,2)
+      complex zi,a,b
+c     write(6,*) 'hi from dslash'
+c
+      zi=cmplx(0.0,1.0)
+      zik=akappa*zi
+c
+c     diagonal term - Phi scaled by factor of two for now to save flops
+      diag=2*((3.0-am3)+1.0)
+      do iflavor=1,2
+      do idirac=1,4
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+      Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &  diag*R(ithird,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c     Wilson + Dirac term using specific gamma matrix representation in init
+      do iflavor=1,2
+c     mu=1
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,mod(ix,ksize)+1,iy,it,1,iflavor)+
+     &   zi*R(ithird,mod(ix,ksize)+1,iy,it,4,iflavor)
+      b=R(ithird,mod(ix,ksize)+1,iy,it,2,iflavor)+
+     &   zi*R(ithird,mod(ix,ksize)+1,iy,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)+zi*b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)+zi*a
+      enddo
+      enddo
+      enddo
+      enddo
+c
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,1,iflavor)-
+     &   zi*R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,4,iflavor)
+      b=R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,2,iflavor)-
+     &   zi*R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)-zi*b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)-zi*a
+c
+      enddo
+      enddo
+      enddo
+      enddo
+c     mu=2
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,mod(iy,ksize)+1,it,1,iflavor)+
+     &   R(ithird,ix,mod(iy,ksize)+1,it,4,iflavor)
+      b=R(ithird,ix,mod(iy,ksize)+1,it,2,iflavor)-
+     &   R(ithird,ix,mod(iy,ksize)+1,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)+b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)-a
+      enddo
+      enddo
+      enddo
+      enddo
+c
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,1,iflavor)-
+     &   R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,4,iflavor)
+      b=R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,2,iflavor)+
+     &   R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)-b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)+a
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c     mu=0
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,iy,mod(it,ksizet)+1,1,iflavor)+
+     &   zi*R(ithird,ix,iy,mod(it,ksizet)+1,3,iflavor)
+      b=R(ithird,ix,iy,mod(it,ksizet)+1,2,iflavor)-
+     &   zi*R(ithird,ix,iy,mod(it,ksizet)+1,4,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)+zi*a
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)-zi*b
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+      a=R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,1,iflavor)-
+     &   zi*R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,3,iflavor)
+      b=R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,2,iflavor)+
+     &   zi*R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,4,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)-zi*a
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)+zi*b
+c
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c  Now define Phi with correct normalisation
+      do iflavor=1,2
+      do idirac=1,4
+      do it=1,ksizet
+      do iy=1,ksize
+      do ix = 1,ksize
+      do ithird=1,kthird
+         Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &    akappa*Phi(ithird,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c  anti-p.b.c. in timelike direction
+      if(ibound.eq.-1)then
+      do iflavor=1,2
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,iy,1,1,iflavor)+
+     &   zi*R(ithird,ix,iy,1,3,iflavor)
+      b=R(ithird,ix,iy,1,2,iflavor)-
+     &   zi*R(ithird,ix,iy,1,4,iflavor)
+      Phi(ithird,ix,iy,ksizet,1,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,1,iflavor)+a
+      Phi(ithird,ix,iy,ksizet,2,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,2,iflavor)+b
+      Phi(ithird,ix,iy,ksizet,3,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,3,iflavor)-zi*a
+      Phi(ithird,ix,iy,ksizet,4,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,4,iflavor)+zi*b
+c
+      enddo
+      enddo
+      enddo
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,iy,ksizet,1,iflavor)-
+     &   zi*R(ithird,ix,iy,ksizet,3,iflavor)
+      b=R(ithird,ix,iy,ksizet,2,iflavor)+
+     &   zi*R(ithird,ix,iy,ksizet,4,iflavor)
+      Phi(ithird,ix,iy,1,1,iflavor)=
+     &    Phi(ithird,ix,iy,1,1,iflavor)+a
+      Phi(ithird,ix,iy,1,2,iflavor)=
+     &    Phi(ithird,ix,iy,1,2,iflavor)+b
+      Phi(ithird,ix,iy,1,3,iflavor)=
+     &    Phi(ithird,ix,iy,1,3,iflavor)+zi*a
+      Phi(ithird,ix,iy,1,4,iflavor)=
+     &    Phi(ithird,ix,iy,1,4,iflavor)-zi*b
+c
+      enddo
+      enddo
+      enddo
+      enddo
+      endif
+c
+c  s-like term exploiting projection
+      do iflavor=1,2
+      do idirac=3,4
+      do it=1,ksizet
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird-1
+      Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &   Phi(ithird,ix,iy,it,idirac,iflavor)
+     &   -R(ithird+1,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      do idirac=1,2
+      do it=1,ksizet
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird-1
+      Phi(ithird+1,ix,iy,it,idirac,iflavor)=
+     &   Phi(ithird+1,ix,iy,it,idirac,iflavor)
+     &    -R(ithird,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c
+c  coupling to chi (couples the two walls)
+      if(imass.eq.1)then
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(chi(ix,iy,it,3),0.0)
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(1,ix,iy,it,idirac,1)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    -spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,1)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    -spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+cc
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(chi(ix,iy,it,1),-chi(ix,iy,it,2))
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    +conjg(spm(ix,iy,it))*R(1,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    +conjg(spm(ix,iy,it))*R(kthird,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+      elseif(imass.eq.3)then
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(0.0,+chi(ix,iy,it,3))
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    -spm(ix,iy,it)*R(1,ix,iy,it,idirac,1)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    +spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,1)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    -spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+cc
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(chi(ix,iy,it,2),chi(ix,iy,it,1))
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    -spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    +conjg(spm(ix,iy,it))*R(1,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    -conjg(spm(ix,iy,it))*R(kthird,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+      endif
+c
+      return
+      end
+c***********************************************************************
+      subroutine dslashd_v2(Phi,R,chi,am,imass)
+c
+c     calculates Phi = Mdagger*R
+c
+      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(akappa=0.5)
+      common/para/beta,am3,ibound
+      real chi(ksize,ksize,ksizet,3)
+      complex spm(ksize,ksize,ksizet)
+      complex Phi(kthird,ksize,ksize,ksizet,4,2),
+     &   R(kthird,ksize,ksize,ksizet,4,2)
+      complex zi,a,b
+c     write(6,*) 'hi from dslashd'
+c
+      zi = cmplx(0.0,1.0)
+      zik=akappa*zi
+c
+c     diagonal term - Phi is rescaled by factor two for now
+      diag=2*((3.0-am3)+1.0)
+      do iflavor=1,2
+      do idirac=1,4
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+      Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &   diag*R(ithird,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c     Wilson + Dirac term in one exploiting r=1 term
+      do iflavor=1,2
+c     mu=1
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,mod(ix,ksize)+1,iy,it,1,iflavor)-
+     &   zi*R(ithird,mod(ix,ksize)+1,iy,it,4,iflavor)
+      b=R(ithird,mod(ix,ksize)+1,iy,it,2,iflavor)-
+     &   zi*R(ithird,mod(ix,ksize)+1,iy,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)-zi*b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)-zi*a
+      enddo
+      enddo
+      enddo
+      enddo
+c
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+      a=R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,1,iflavor)+
+     &   zi*R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,4,iflavor)
+      b=R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,2,iflavor)+
+     &   zi*R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)+zi*b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)+zi*a
+c
+      enddo
+      enddo
+      enddo
+      enddo
+c     mu=2
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,mod(iy,ksize)+1,it,1,iflavor)-
+     &   R(ithird,ix,mod(iy,ksize)+1,it,4,iflavor)
+      b=R(ithird,ix,mod(iy,ksize)+1,it,2,iflavor)+
+     &   R(ithird,ix,mod(iy,ksize)+1,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)-b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)+a
+      enddo
+      enddo
+      enddo
+      enddo
+c
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+      a=R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,1,iflavor)+
+     &   R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,4,iflavor)
+      b=R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,2,iflavor)-
+     &   R(ithird,ix,mod(iy+ksize-2,ksize)+1,it,3,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)+b
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)-a
+c
+      enddo
+      enddo
+      enddo
+      enddo
+c     mu=0
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,iy,mod(it,ksizet)+1,1,iflavor)-
+     &   zi*R(ithird,ix,iy,mod(it,ksizet)+1,3,iflavor)
+      b=R(ithird,ix,iy,mod(it,ksizet)+1,2,iflavor)+
+     &   zi*R(ithird,ix,iy,mod(it,ksizet)+1,4,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)-zi*a
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)+zi*b
+      enddo
+      enddo
+      enddo
+      enddo
+c
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+      a=R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,1,iflavor)+
+     &   zi*R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,3,iflavor)
+      b=R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,2,iflavor)-
+     &   zi*R(ithird,ix,iy,mod(it+ksizet-2,ksizet)+1,4,iflavor)
+      Phi(ithird,ix,iy,it,1,iflavor)=
+     &    Phi(ithird,ix,iy,it,1,iflavor)-a
+      Phi(ithird,ix,iy,it,2,iflavor)=
+     &    Phi(ithird,ix,iy,it,2,iflavor)-b
+      Phi(ithird,ix,iy,it,3,iflavor)=
+     &    Phi(ithird,ix,iy,it,3,iflavor)+zi*a
+      Phi(ithird,ix,iy,it,4,iflavor)=
+     &    Phi(ithird,ix,iy,it,4,iflavor)-zi*b
+c
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c  Now define Phi with correct normalisation
+      do iflavor=1,2
+      do idirac=1,4
+      do it=1,ksizet
+      do iy=1,ksize
+      do ix = 1,ksize
+      do ithird=1,kthird
+         Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &    akappa*Phi(ithird,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c  anti-p.b.c. in timelike direction
+      if(ibound.eq.-1)then
+      do iflavor=1,2
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,iy,1,1,iflavor)-
+     &   zi*R(ithird,ix,iy,1,3,iflavor)
+      b=R(ithird,ix,iy,1,2,iflavor)+
+     &   zi*R(ithird,ix,iy,1,4,iflavor)
+      Phi(ithird,ix,iy,ksizet,1,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,1,iflavor)+a
+      Phi(ithird,ix,iy,ksizet,2,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,2,iflavor)+b
+      Phi(ithird,ix,iy,ksizet,3,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,3,iflavor)+zi*a
+      Phi(ithird,ix,iy,ksizet,4,iflavor)=
+     &    Phi(ithird,ix,iy,ksizet,4,iflavor)-zi*b
+c
+      enddo
+      enddo
+      enddo
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird
+c
+      a=R(ithird,ix,iy,ksizet,1,iflavor)+
+     &   zi*R(ithird,ix,iy,ksizet,3,iflavor)
+      b=R(ithird,ix,iy,ksizet,2,iflavor)-
+     &   zi*R(ithird,ix,iy,ksizet,4,iflavor)
+      Phi(ithird,ix,iy,1,1,iflavor)=
+     &    Phi(ithird,ix,iy,1,1,iflavor)+a
+      Phi(ithird,ix,iy,1,2,iflavor)=
+     &    Phi(ithird,ix,iy,1,2,iflavor)+b
+      Phi(ithird,ix,iy,1,3,iflavor)=
+     &    Phi(ithird,ix,iy,1,3,iflavor)-zi*a
+      Phi(ithird,ix,iy,1,4,iflavor)=
+     &    Phi(ithird,ix,iy,1,4,iflavor)+zi*b
+c
+      enddo
+      enddo
+      enddo
+      enddo
+      endif
+c
+c  s-like term exploiting projection
+      do iflavor=1,2
+      do idirac=1,2
+      do it=1,ksizet
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird-1
+      Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &   Phi(ithird,ix,iy,it,idirac,iflavor)
+     &   -R(ithird+1,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      do idirac=3,4
+      do it=1,ksizet
+      do iy=1,ksize
+      do ix=1,ksize
+      do ithird=1,kthird-1
+      Phi(ithird+1,ix,iy,it,idirac,iflavor)=
+     &   Phi(ithird+1,ix,iy,it,idirac,iflavor)
+     &    -R(ithird,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c  chi term (couples the two walls)
+      if(imass.eq.1)then
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(chi(ix,iy,it,3),0.0)
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(1,ix,iy,it,idirac,1)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    -spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,1)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    -spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+cc
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(chi(ix,iy,it,1),-chi(ix,iy,it,2))
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    +conjg(spm(ix,iy,it))*R(1,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    +conjg(spm(ix,iy,it))*R(kthird,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+      elseif(imass.eq.3)then
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(0.0,-chi(ix,iy,it,3))
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(1,ix,iy,it,idirac,1)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    -spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    -spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,1)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    +spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         enddo
+         enddo
+         enddo
+         enddo
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         spm(ix,iy,it)=cmplx(-chi(ix,iy,it,2),-chi(ix,iy,it,1))
+         enddo
+         enddo
+         enddo
+         do idirac=1,2
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(kthird,ix,iy,it,idirac,1)=Phi(kthird,ix,iy,it,idirac,1)
+     &    +spm(ix,iy,it)*R(1,ix,iy,it,idirac,2)
+         Phi(kthird,ix,iy,it,idirac,2)=Phi(kthird,ix,iy,it,idirac,2)
+     &    -conjg(spm(ix,iy,it))*R(1,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+         do idirac=3,4
+         do it=1,ksizet
+         do iy=1,ksize
+         do ix=1,ksize
+         Phi(1,ix,iy,it,idirac,1)=Phi(1,ix,iy,it,idirac,1)
+     &    -spm(ix,iy,it)*R(kthird,ix,iy,it,idirac,2)
+         Phi(1,ix,iy,it,idirac,2)=Phi(1,ix,iy,it,idirac,2)
+     &    +conjg(spm(ix,iy,it))*R(kthird,ix,iy,it,idirac,1)
+         enddo
+         enddo
+         enddo
+         enddo
+      endif
+c
+      return
+      end

@@ -84,7 +84,7 @@ c*******************************************************************
       if(iread.eq.1) then
       call sread
       endif
-      read(25,*) dt,beta,am3,am,h0,imass,iterl,iter2
+      read(25,*) dt,beta,am3,am,hpin,imass,iterl,iter2
       close(25)
 c set a new seed by hand...
       if(iseed.ne.0)then
@@ -129,14 +129,14 @@ c*******************************************************************
       traj=iterl*dt
       proby=1.0/float(iterl)
 c     write(6, 9001)ksize,ksizet,kthird,dt,traj,iter2,beta,am3,am,
-c    & h0, imass
+c    & hpin, imass
       write(7, 9001)ksize,ksizet,kthird,dt,traj,iter2,beta,am3,am,
-     & h0, imass
+     & hpin, imass
 9001  format(' ksize=',i3,' ksizet=',i3,/
      1 ,' kthird=',i3,/
      1 ,' time step: dt=',f6.4,' trajectory length=',f9.6,/
      1 ,' # trajectories=',i6,' beta=',f9.6,/
-     1 ,' am3=',f6.4,' am=',f6.4,' h0=',f6.4,/
+     1 ,' am3=',f6.4,' am=',f6.4,' hpin=',f6.4,/
      1 ,' imass=',i2)
 c     write(6,9004) rescgg,rescga,respbp
       write(7,9004) rescgg,rescga,respbp
@@ -195,7 +195,7 @@ c*******************************************************************
       enddo
 c  For Phi = {MdaggerM}^0.25 * R
 c
-      call qmrherm(R,rescga,itercg,am,h0,imass,anum4,aden4,ndiag,0)
+      call qmrherm(R,rescga,itercg,am,hpin,imass,anum4,aden4,ndiag,0)
       ancgpf=ancgpf+float(itercg)
 c
       do iflavor=1,2
@@ -223,7 +223,7 @@ c*******************************************************************
 c  call to Hamiltonian
 c     
       call hamilton(Phi,
-     &      H0,hg,hp,S0,rescga,isweep,am,h0,imass)
+     &      H0,hg,hp,S0,rescga,isweep,am,hpin,imass)
       if(isweep.eq.1) then
       action=S0/kvol
       gaction=hg/kvol
@@ -233,7 +233,7 @@ c     goto 501
 c*******************************************************************
 c      half-step forward for p
 c*******************************************************************
-      call force(Phi,rescgg,am,h0,imass)
+      call force(Phi,rescgg,am,hpin,imass)
       d=dt*0.5
       do 2004 ia=1,3
       do 2004 i=1,kvol
@@ -254,7 +254,7 @@ c
 c
 c  step (ii)  p(t+3dt/2)=p(t+dt/2)-dSds(t+dt)*dt (1/2 step on last iteration)
 c
-      call force(Phi,rescgg,am,h0,imass)
+      call force(Phi,rescgg,am,hpin,imass)
 c
 c test for end of random trajectory
 c 
@@ -283,7 +283,7 @@ c              min(1,exp(H0-H1))
 c**********************************************************************
 501   continue 
       call hamilton(Phi,
-     &       H1,hg,hp,S1,rescga,isweep,am,h0,imass)
+     &       H1,hg,hp,S1,rescga,isweep,am,hpin,imass)
       dH=H0-H1
       dS=S0-S1
       write(98,*) dH,dS
@@ -352,7 +352,7 @@ c    PLEASE SANITY CHECK
       write(14,*) condmod, susctot
 c
 c  I don't think we're ever going to use this.....
-c     call measure(pbp,respbp,ancgm,am,h0,imass)
+c     call measure(pbp,respbp,ancgm,am,hpin,imass)
       pbpa=pbpa+pbp
       ancgma=ancgma+ancgm
       ipbp=ipbp+1
@@ -427,7 +427,7 @@ c
 c******************************************************************
 c   calculate dSds for sigma fields at each intermediate time
 c******************************************************************
-      subroutine force(Phi,res1,am,h0,imass)
+      subroutine force(Phi,res1,am,hpin,imass)
       parameter(ksize=12,ksizet=12,kthird=8,kvol=ksize*ksize*ksizet)
       parameter(kferm=kvol*kthird*4*2)
       parameter(ndiagg=12,ndiag=ndiagg)
@@ -461,14 +461,14 @@ c
       do i=1,kferm
       X2(i)=Phi(i)
       enddo
-      call qmrherm(X2,res1,itercg,am,h0,imass,bnum,bden,ndiag,0)
+      call qmrherm(X2,res1,itercg,am,hpin,imass,bnum,bden,ndiag,0)
       ancg=ancg+float(itercg)
       do i=1,kferm
       X2(i)=X1(i)
       enddo
 c
 c  evaluates X2dagger * d/dpi[{MdaggerM(m)}^1/2] * X2
-      call qmrherm(X2,res1,itercg,am,h0,imass,anum,aden,ndiag,1)
+      call qmrherm(X2,res1,itercg,am,hpin,imass,anum,aden,ndiag,1)
       ancgf=ancgf+float(itercg)
 c
       return
@@ -477,7 +477,7 @@ c******************************************************************
 c   Evaluation of Hamiltonian function
 c******************************************************************
       subroutine hamilton(Phi,
-     &       h,hg,hp,s,res2,isweep,am,h0,imass)
+     &       h,hg,hp,s,res2,isweep,am,hpin,imass)
       parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kvol*kthird)
       parameter(ndiag=25)
@@ -525,7 +525,7 @@ c
       do i=1,kferm
       R(i)=Phi(i)
       enddo
-      call qmrherm(R,res2,itercg,am,h0,imass,bnum,bden,ndiag,0)
+      call qmrherm(R,res2,itercg,am,hpin,imass,bnum,bden,ndiag,0)
 c
       ancgh=ancgh+float(itercg)
 
@@ -550,7 +550,8 @@ c   iflag=0: simply evaluates X = {MdaggerM}^p * Phi
 c   can be interchanged with congrad for p=-1
 c   iflag=1: evaluates DWF force term
 c*****************************************************************m
-      subroutine qmrherm(Phi,res,itercg,am,h0,imass,anum,aden,ndiag,iflag)
+      subroutine qmrherm(Phi,res,itercg,am,hpin,
+     &               imass,anum,aden,ndiag,iflag)
       parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       parameter(niterc=2000)
@@ -598,8 +599,8 @@ c
          q(i)=r(i)/beta
       enddo
 c
-      call dslash(vtild,q,chi,am,h0,imass)
-      call dslashd(x3,vtild,chi,am,h0,imass)
+      call dslash(vtild,q,chi,am,hpin,imass)
+      call dslashd(x3,vtild,chi,am,hpin,imass)
 c
       alphatild=0.0
       do i=1,kferm
@@ -691,7 +692,7 @@ c  X2 = M*X1
       do i=1,kferm
       R(i)=x1(i,idiag)
       enddo
-      call dslash(X2,R,chi,am,h0,imass)
+      call dslash(X2,R,chi,am,hpin,imass)
       call derivs(R,X2,anum(idiag),imass)
 c
       enddo
@@ -808,7 +809,7 @@ c******************************************************************
 c    tests inversion for each term in partial fraction expansion
 c    accuracy severely curtailed by truncation/rounding - use for testing purposes only.
 c******************************************************************
-      subroutine testinv(Phi,resmax,itercg,am,h0,imass,x,aden,ndiag)
+      subroutine testinv(Phi,resmax,itercg,am,hpin,imass,x,aden,ndiag)
       parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -829,8 +830,8 @@ c
       do i=1,kferm
       x3(i)=x(i,idiag)
       enddo
-      call dslash(x2,x3,chi,am,h0,imass)
-      call dslashd(x1,x2,chi,am,h0,imass)
+      call dslash(x2,x3,chi,am,hpin,imass)
+      call dslashd(x1,x2,chi,am,hpin,imass)
       do i=1,kferm
       vtild(i)=x1(i)+aden(idiag)*x3(i)-Phi(i)
       residual=residual + real(vtild(i))**2 + aimag(vtild(i))**2
@@ -849,7 +850,7 @@ c    matrix inversion via conjugate gradient algorithm
 c       solves (Mdagger)Mx=Phi, 
 c           NB. no even/odd partitioning
 c******************************************************************
-      subroutine congrad(Phi,res,itercg,am,h0,imass)
+      subroutine congrad(Phi,res,itercg,am,hpin,imass)
       parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       parameter(niterc=kthird*kvol)
@@ -881,7 +882,7 @@ c
 c
 c  x1=Mp
 c
-      call dslash(x1,p,chi,am,h0,imass)
+      call dslash(x1,p,chi,am,hpin,imass)
 c
       if(nx.eq.1) goto 201
 c
@@ -902,7 +903,7 @@ c
 c     
 c   x2=(Mdagger)x1=(Mdagger)Mp
 c
-      call dslashd(x2,x1,chi,am,h0,imass)
+      call dslashd(x2,x1,chi,am,hpin,imass)
 c
 c   r=r-alpha*(Mdagger)Mp
 c
@@ -942,7 +943,7 @@ c   -matrix inversion via conjugate gradient algorithm
 c       solves Mx=x1
 c     (Numerical Recipes section 2.10 pp.70-73)   
 c*******************************************************************
-      subroutine measure(psibarpsi,res,aviter,am,h0,imass)
+      subroutine measure(psibarpsi,res,aviter,am,hpin,imass)
       parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(akappa=0.5)
       parameter(knoise=10)
@@ -1051,7 +1052,7 @@ c   xi = 0.5(1+gamma_4)*eta on DW at ithird=1
 c
 c Phi= Mdagger*xi
 c
-      call dslashd(Phi,xi,chi,am,h0,imass)
+      call dslashd(Phi,xi,chi,am,hpin,imass)
 c
       do 302 iflavor=1,2
       do 302 idirac=1,4
@@ -1062,7 +1063,7 @@ c
 c  
 c xi= (MdaggerM)**-1 * Phi 
 c
-      call congrad(Phi,res,itercg,am,h0,imass) 
+      call congrad(Phi,res,itercg,am,hpin,imass) 
       iter=iter+itercg
 c
       if(imass.ne.5)then
@@ -1160,7 +1161,7 @@ c   xi = 0.5(1-gamma_4)*gamma_5*eta on DW at ithird=kthird
 c
 c Phi= Mdagger*xi
 c
-      call dslashd(Phi,xi,chi,am,h0,imass)
+      call dslashd(Phi,xi,chi,am,hpin,imass)
 c
       do 305 iflavor=1,2
       do 305 idirac=1,4
@@ -1171,7 +1172,7 @@ c
 c  
 c xi= (MdaggerM)**-1 * Phi 
 c
-      call congrad(Phi,res,itercg,am,h0,imass) 
+      call congrad(Phi,res,itercg,am,hpin,imass) 
       iter=iter+itercg
 c
       if(imass.ne.5)then
@@ -1240,6 +1241,12 @@ c*****************************************************************
      1     status='unknown',form='unformatted')
       read (10) chi,seed
       close(10)
+c  ad hoc jiggery-pokery devised to organise fields for pinning
+c     do i=1,kvol
+c     a=chi(i,2)
+c     chi(i,2)=chi(i,3)
+c     chi(i,3)=-a
+c     enddo
       return
       end
 c
@@ -1558,7 +1565,7 @@ C
           RETURN
           END
 c***********************************************************************
-      subroutine dslash(Phi,R,chi,am,h0,imass)
+      subroutine dslash(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = M*R
 c
@@ -1812,15 +1819,15 @@ c
 c  pinning term
          do idirac=3,4
          Phi(kthird,1,1,1,idirac,1)=Phi(kthird,1,1,1,idirac,1)
-     &    +h0*R(1,1,1,1,idirac,1)
+     &    +hpin*R(1,1,1,1,idirac,1)
          Phi(kthird,1,1,1,idirac,2)=Phi(kthird,1,1,1,idirac,2)
-     &    -h0*R(1,1,1,1,idirac,2)
+     &    -hpin*R(1,1,1,1,idirac,2)
          enddo
          do idirac=1,2
          Phi(1,1,1,1,idirac,1)=Phi(1,1,1,1,idirac,1)
-     &    +h0*R(kthird,1,1,1,idirac,1)
+     &    +hpin*R(kthird,1,1,1,idirac,1)
          Phi(1,1,1,1,idirac,2)=Phi(1,1,1,1,idirac,2)
-     &    -h0*R(kthird,1,1,1,idirac,2)
+     &    -hpin*R(kthird,1,1,1,idirac,2)
          enddo
 c
 cc
@@ -1924,7 +1931,7 @@ c
       return
       end
 c***********************************************************************
-      subroutine dslashd(Phi,R,chi,am,h0,imass)
+      subroutine dslashd(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = Mdagger*R
 c
@@ -2177,15 +2184,15 @@ c
 c  pinning term
          do idirac=1,2
          Phi(kthird,1,1,1,idirac,1)=Phi(kthird,1,1,1,idirac,1)
-     &    +h0*R(1,1,1,1,idirac,1)
+     &    +hpin*R(1,1,1,1,idirac,1)
          Phi(kthird,1,1,1,idirac,2)=Phi(kthird,1,1,1,idirac,2)
-     &    -h0*R(1,1,1,1,idirac,2)
+     &    -hpin*R(1,1,1,1,idirac,2)
          enddo
          do idirac=3,4
          Phi(1,1,1,1,idirac,1)=Phi(1,1,1,1,idirac,1)
-     &    +h0*R(kthird,1,1,1,idirac,1)
+     &    +hpin*R(kthird,1,1,1,idirac,1)
          Phi(1,1,1,1,idirac,2)=Phi(1,1,1,1,idirac,2)
-     &    -h0*R(kthird,1,1,1,idirac,2)
+     &    -hpin*R(kthird,1,1,1,idirac,2)
          enddo
 c
 cc

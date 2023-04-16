@@ -1587,10 +1587,9 @@ c
 c     diagonal term
       diag=(3.0-am3)+1.0
 
+      !$OMP PARALLEL DO COLLAPSE(6)
       do iflavor=1,2
       do idirac=1,4
-
-      !$OMP PARALLEL DO COLLAPSE(3)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -1609,7 +1608,7 @@ c     Wilson term
       do idirac=1,4
 c     mu=1
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -1624,7 +1623,7 @@ c     mu=1
       enddo
 c     mu=2
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -1639,7 +1638,7 @@ c     mu=2
       enddo
 c     mu=0
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -1660,7 +1659,7 @@ c  anti-p.b.c. in timelike direction
       do iflavor=1,2
       do idirac=1,4
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1671,7 +1670,7 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1692,7 +1691,7 @@ c     mu=1
       mu=1
       igork=gamin(mu,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1710,7 +1709,7 @@ c     mu=2
       mu=2
       igork=gamin(mu,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1728,7 +1727,7 @@ c     mu=0
       mu=3
       igork=gamin(mu,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1751,7 +1750,7 @@ c  anti-p.b.c. in timelike direction
       do idirac=1,4
       igork=gamin(3,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1762,7 +1761,7 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1778,9 +1777,9 @@ c  anti-p.b.c. in timelike direction
 c
 c  s-like term exploiting projection
       do iflavor=1,2
-      do idirac=3,4
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(5)
+      do idirac=3,4
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1793,9 +1792,9 @@ c  s-like term exploiting projection
       enddo
       enddo
       enddo
-      do idirac=1,2
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(5)
+      do idirac=1,2
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1823,9 +1822,8 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=3,4
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1838,9 +1836,8 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=1,2
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1877,9 +1874,8 @@ cc
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=3,4
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1892,9 +1888,8 @@ cc
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=1,2
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1917,9 +1912,8 @@ cc
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=3,4
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1932,9 +1926,8 @@ cc
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=1,2
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1956,9 +1949,8 @@ cc
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=3,4
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1971,9 +1963,8 @@ cc
          enddo
          enddo
 
+      !$OMP PARALLEL DO COLLAPSE(4)
          do idirac=1,2
-
-      !$OMP PARALLEL DO COLLAPSE(3)
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2010,10 +2001,10 @@ c     write(6,*) 'hi from dslashd'
 c
 c     diagonal term
       diag=(3.0-am3)+1.0
+
+      !$OMP PARALLEL DO COLLAPSE(6)
       do iflavor=1,2
       do idirac=1,4
-
-      !$OMP PARALLEL DO COLLAPSE(3)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2032,7 +2023,7 @@ c     Wilson term
       do idirac=1,4
 c     mu=1
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2047,7 +2038,7 @@ c     mu=1
       enddo
 c     mu=2
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2062,7 +2053,7 @@ c     mu=2
       enddo
 c     mu=0
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2083,7 +2074,7 @@ c  anti-p.b.c. in timelike direction
       do iflavor=1,2
       do idirac=1,4
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2094,7 +2085,7 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2115,7 +2106,7 @@ c     mu=1
       mu=1
       igork=gamin(mu,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -2133,7 +2124,7 @@ c     mu=2
       mu=2
       igork=gamin(mu,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -2151,7 +2142,7 @@ c     mu=0
       mu=3
       igork=gamin(mu,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -2173,7 +2164,7 @@ c  anti-p.b.c. in timelike direction
       do idirac=1,4
       igork=gamin(3,idirac)
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2184,7 +2175,7 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
 
-      !$OMP PARALLEL DO COLLAPSE(2)
+      !$OMP PARALLEL DO COLLAPSE(3)
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2200,9 +2191,9 @@ c  anti-p.b.c. in timelike direction
 c
 c  s-like term exploiting projection
       do iflavor=1,2
-      do idirac=1,2
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(5)
+      do idirac=1,2
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -2216,7 +2207,7 @@ c  s-like term exploiting projection
       enddo
       enddo
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(5)
       do idirac=3,4
       do it=1,ksizet
       do iy=1,ksize
@@ -2243,9 +2234,9 @@ c  chi term (couples the two walls)
          enddo
          enddo
          enddo
-         do idirac=1,2
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
+         do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2257,9 +2248,9 @@ c  chi term (couples the two walls)
          enddo
          enddo
          enddo
-         do idirac=3,4
 
-      !$OMP PARALLEL DO COLLAPSE(3)
+      !$OMP PARALLEL DO COLLAPSE(4)
+         do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize

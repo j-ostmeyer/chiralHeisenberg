@@ -3,11 +3,11 @@
 
       INTEGER :: thread_id
 
-      !$OMP PARALLEL PRIVATE(thread_id) NUM_THREADS(4)
+!$OMP PARALLEL PRIVATE(thread_id)
 
       thread_id = OMP_GET_THREAD_NUM()
       PRINT *, "Hello from process: ", thread_id
 
-      !$OMP END PARALLEL
+!$OMP END PARALLEL
 
       END

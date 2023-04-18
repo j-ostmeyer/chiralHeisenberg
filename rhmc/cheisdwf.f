@@ -578,11 +578,10 @@ c     write(6,*) resid
 c
 c   initialise r=Phi
 c
-      do i=1,kferm
-         r(i)=Phi(i)
-         qm1(i)=(0.0,0.0)
-         x(i)=anum(0)*Phi(i)
-      enddo
+      r=Phi
+      qm1=(0.0,0.0)
+      x=anum(0)*Phi
+
       beta=0.0
       do i=1,kferm
          beta=beta + real(r(i))**2 + aimag(r(i))**2
@@ -596,9 +595,7 @@ c
 c
 c  Lanczos steps
 c
-      do i=1,kferm
-         q(i)=r(i)/beta
-      enddo
+      q=r/beta
 c
       call dslash(vtild,q,chi,am,hpin,imass)
       call dslashd(x3,vtild,chi,am,hpin,imass)
@@ -608,10 +605,8 @@ c
          alphatild=alphatild+conjg(q(i))*x3(i)
       enddo
 c
-      do i=1,kferm
-         r(i)=x3(i)-alphatild*q(i)-beta*qm1(i)
-         qm1(i)=q(i)
-      enddo
+      r=x3-alphatild*q-beta*qm1
+      qm1=q
 c
       beta0=beta
       beta=0.0
@@ -627,25 +622,19 @@ c
       if(iter.eq.1)then
            do idiag=1,ndiag
              d(idiag)=alpha(idiag)
-             do i=1,kferm
-              p(i,idiag)=q(i)
-              pm1(i,idiag)=p(i,idiag)
-             enddo
+             p(:,idiag)=q
+             pm1(:,idiag)=p(:,idiag)
              rho(idiag)=beta0/alpha(idiag)
              rhom1(idiag)=rho(idiag)
-             do i=1,kferm
-              x1(i,idiag)=rho(idiag)*q(i)
-             enddo
+             x1(:,idiag)=rho(idiag)*q
            enddo
       else
            do idiag=1,ndiag
              amu(idiag)=beta0/d(idiag)
              dm1(idiag)=d(idiag)
              d(idiag)=alpha(idiag)-beta0*amu(idiag)
-             do i=1,kferm
-              p(i,idiag)=q(i)-amu(idiag)*pm1(i,idiag)
-              pm1(i,idiag)=p(i,idiag)
-             enddo
+             p(:,idiag)=q-amu(idiag)*pm1(:,idiag)
+             pm1(:,idiag)=p(:,idiag)
              rho(idiag)=-amu(idiag)*dm1(idiag)*rhom1(idiag)/d(idiag)
 c  Convergence criterion (a bit ad hoc for now...)
              if(idiag.eq.1)then
@@ -655,9 +644,7 @@ c  Convergence criterion (a bit ad hoc for now...)
      &             rhomax=abs(phimod*rho(idiag))
              endif
              rhom1(idiag)=rho(idiag)
-             do i=1,kferm
-               x1(i,idiag)=x1(i,idiag)+rho(idiag)*p(i,idiag)
-             enddo
+             x1(:,idiag)=x1(:,idiag)+rho(idiag)*p(:,idiag)
            enddo
 c  check to see whether the residual is acceptable for all ndiag....
 c  criterion is a bit ad hoc
@@ -678,9 +665,7 @@ c
 c
 c  evaluate solution x=(MdaggerM)^{-0.5}*Phi
       do idiag=1,ndiag
-      do i=1,kferm
-      x(i)=x(i)+anum(idiag)*x1(i,idiag)
-      enddo
+      x=x+anum(idiag)*x1(:,idiag)
       enddo
 c
       else
@@ -690,9 +675,7 @@ c
       do idiag=1,ndiag
 c
 c  X2 = M*X1
-      do i=1,kferm
-      R(i)=x1(i,idiag)
-      enddo
+      R=x1(:,idiag)
       call dslash(X2,R,chi,am,hpin,imass)
       call derivs(R,X2,anum(idiag),imass)
 c

@@ -563,11 +563,11 @@ c*****************************************************************m
       complex Phi(kferm)
       complex x
       real*8 anum(0:ndiag),aden(ndiag)
-      complex vtild(kferm),q(kferm),pm1(kferm,ndiag)
-      complex qm1(kferm),p(kferm,ndiag),x3(kferm),r(kferm)
-      complex x1(kferm,ndiag),x2(kferm)
+      complex vtild(kferm),q(kferm)!,pm1(kferm,ndiag)
+      complex qm1(kferm),p(ndiag,kferm),x3(kferm),r(kferm)
+      complex x1(ndiag,kferm),x2(kferm)
       real alpha(ndiag),beta
-      real amu(ndiag),d(ndiag),dm1(ndiag),rho(ndiag),rhom1(ndiag)
+      real amu(ndiag),d(ndiag),dm1(ndiag),rho(ndiag)!,rhom1(ndiag)
 c
 c     write(6,111)
 111   format(' Hi from qmrherm')
@@ -620,32 +620,42 @@ c
       enddo
 c
       if(iter.eq.1)then
-           do idiag=1,ndiag
-             d(idiag)=alpha(idiag)
-             p(:,idiag)=q
-             pm1(:,idiag)=p(:,idiag)
-             rho(idiag)=beta0/alpha(idiag)
-             rhom1(idiag)=rho(idiag)
-             x1(:,idiag)=rho(idiag)*q
-           enddo
+        d=alpha
+        rho=beta0/alpha
+        !rhom1=rho
+!$OMP PARALLEL DO
+        do i=1,kferm
+        do idiag=1,ndiag
+        p(idiag,i)=q(i)
+        !pm1(idiag,i)=p(idiag,i)
+        x1(idiag,i)=rho(idiag)*q(i)
+        enddo
+        enddo
       else
-           do idiag=1,ndiag
-             amu(idiag)=beta0/d(idiag)
-             dm1(idiag)=d(idiag)
-             d(idiag)=alpha(idiag)-beta0*amu(idiag)
-             p(:,idiag)=q-amu(idiag)*pm1(:,idiag)
-             pm1(:,idiag)=p(:,idiag)
-             rho(idiag)=-amu(idiag)*dm1(idiag)*rhom1(idiag)/d(idiag)
+        amu=beta0/d
+        dm1=d
+        d=alpha-beta0*amu
+        rho=-amu*dm1*rho/d
+        !rhom1=rho
+!$OMP PARALLEL DO
+        do i=1,kferm
+        do idiag=1,ndiag
+          p(idiag,i)=q(i)-amu(idiag)*p(idiag,i) ! pm1 -> p on r.h.s
+          !pm1(idiag,i)=p(idiag,i)
+          x1(idiag,i)=x1(idiag,i)+rho(idiag)*p(idiag,i)
+        enddo
+        enddo
+
+        do idiag=1,ndiag
 c  Convergence criterion (a bit ad hoc for now...)
-             if(idiag.eq.1)then
-               rhomax=abs(phimod*rho(idiag))
-             else
-               if(abs(phimod*rho(idiag)).gt.rhomax)
+        if(idiag.eq.1)then
+          rhomax=abs(phimod*rho(idiag))
+        else
+          if(abs(phimod*rho(idiag)).gt.rhomax)
      &             rhomax=abs(phimod*rho(idiag))
-             endif
-             rhom1(idiag)=rho(idiag)
-             x1(:,idiag)=x1(:,idiag)+rho(idiag)*p(:,idiag)
-           enddo
+        endif
+        enddo
+
 c  check to see whether the residual is acceptable for all ndiag....
 c  criterion is a bit ad hoc
 c  relaxing by a factor arelax improves stability and leads to quicker
@@ -665,7 +675,7 @@ c
 c
 c  evaluate solution x=(MdaggerM)^{-0.5}*Phi
       do idiag=1,ndiag
-      x=x+anum(idiag)*x1(:,idiag)
+      x=x+anum(idiag)*x1(idiag,:)
       enddo
 c
       else
@@ -675,7 +685,7 @@ c
       do idiag=1,ndiag
 c
 c  X2 = M*X1
-      R=x1(:,idiag)
+      R=x1(idiag,:)
       call dslash(X2,R,chi,am,hpin,imass)
       call derivs(R,X2,anum(idiag),imass)
 c
@@ -1570,23 +1580,40 @@ c
 c     diagonal term
       diag=(3.0-am3)+1.0
 
-!$omp parallel workshare
-      Phi = diag*R
-!$omp end parallel workshare
+!$OMP PARALLEL DO
+      do iflavor=1,2
+      do idirac=1,4
+      do  it=1,ksizet
+      do  iy=1,ksize
+      do  ix=1,ksize
+      do ithird=1,kthird
+      Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &   diag*R(ithird,ix,iy,it,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
+      enddo
 c
 c     Wilson term
+      do iflavor=1,2
+      do idirac=1,4
 c     mu=1
 
 !$OMP PARALLEL DO
+      do  it=1,ksizet
+      do  iy=1,ksize
       do  ix=1,ksize
-      Phi(:,ix,:,:,:,:)=
-     &    Phi(:,ix,:,:,:,:)
-     &    -akappa*(R(:,mod(ix,ksize)+1,:,:,:,:)
-     &    +R(:,mod(ix+ksize-2,ksize)+1,:,:,:,:))
+      do ithird=1,kthird
+      Phi(ithird,ix,iy,it,idirac,iflavor)=
+     &   Phi(ithird,ix,iy,it,idirac,iflavor)
+     &    -akappa*(R(ithird,mod(ix,ksize)+1,iy,it,idirac,iflavor)
+     &    +R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,idirac,iflavor))
       enddo
-
-      do iflavor=1,2
-      do idirac=1,4
+      enddo
+      enddo
+      enddo
 c     mu=2
 
 !$OMP PARALLEL DO

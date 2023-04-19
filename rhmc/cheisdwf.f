@@ -27,7 +27,7 @@ c    actiona: running average of total action
 c
 c                                               SJH January  2023
 c*******************************************************************
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
       parameter(respbp=0.000001,rescgg=0.000001,rescga=0.000000001)
       parameter(itermax=1000)
       parameter(ndiag=25,ndiagg=12)
@@ -68,7 +68,7 @@ c*******************************************************************
       iread=1
       iwrite=1
       iprint=5
-      iseed=0
+      iseed=1
       icheck=100
       zi=(0.0,1.0)
       tpi=2.0*acos(-1.0)
@@ -91,7 +91,8 @@ c set a new seed by hand...
       seed=4587658465895.0
       endif
       write(7,*) 'seed: ', seed
-      call ranset(seed)
+c     call ranset(seed)
+      call rranset(seed)
       idum=-1
       y=rano(yran,idum)
       write(6,*) 'rano: ', y,yran,idum
@@ -136,13 +137,14 @@ c    & hpin, imass
      1 ,' kthird=',i3,/
      1 ,' time step: dt=',f6.4,' trajectory length=',f9.6,/
      1 ,' # trajectories=',i6,' beta=',f9.6,/
-     1 ,' am3=',f6.4,' am=',f6.4,' hpin=',f6.4,/
+     1 ,' am3=',f6.4,' am=',f6.4,' hpin=',f7.4,/
      1 ,' imass=',i2)
 c     write(6,9004) rescgg,rescga,respbp
       write(7,9004) rescgg,rescga,respbp
 9004  format(' Stopping residuals: guidance: ',e9.4,' acceptance: ',
      &     e9.4,' estimator: ',e9.4)
-      call ranget(seed)
+c     call ranget(seed)
+      call rranget(seed)
 c     write(6,*) 'seed: ', seed
       write(7,*) 'seed: ', seed
 c*******************************************************************
@@ -361,7 +363,8 @@ c     write(11,*) pbp
       endif
 c
       if((isweep/icheck)*icheck.eq.isweep)then
-      call ranget(seed)
+c     call ranget(seed)
+      call rranget(seed)
       call swrite
       flush(12)
       flush(13)
@@ -417,7 +420,8 @@ c
       close(11)
 c
       if(iwrite.eq.1) then
-      call ranget(seed)
+c     call ranget(seed)
+      call rranget(seed)
       call swrite
       write(7,*) 'seed: ', seed
       endif
@@ -428,7 +432,7 @@ c******************************************************************
 c   calculate dSds for sigma fields at each intermediate time
 c******************************************************************
       subroutine force(Phi,res1,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksize*ksize*ksizet)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksize*ksize*ksizet)
       parameter(kferm=kvol*kthird*4*2)
       parameter(ndiagg=12,ndiag=ndiagg)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -478,7 +482,7 @@ c   Evaluation of Hamiltonian function
 c******************************************************************
       subroutine hamilton(Phi,
      &       h,hg,hp,s,res2,isweep,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kvol*kthird)
       parameter(ndiag=25)
       parameter(One=1.0)
@@ -552,9 +556,9 @@ c   iflag=1: evaluates DWF force term
 c*****************************************************************m
       subroutine qmrherm(Phi,res,itercg,am,hpin,
      &               imass,anum,aden,ndiag,iflag)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
-      parameter(niterc=2000)
+      parameter(niterc=20000)
       common/trial/chi(kvol,3),pp(kvol,3)
       common/sforce/dSdchi(kvol,3)
       common/para/bbb,am3,ibound
@@ -703,7 +707,7 @@ c
       end
 c**********************************************************************
       subroutine derivs(R,X2,anum,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
       common/sforce/dSdchi(kvol,3)
       complex R(kthird,kvol,4,2),X2(kthird,kvol,4,2)
       real*8 anum
@@ -810,7 +814,7 @@ c    tests inversion for each term in partial fraction expansion
 c    accuracy severely curtailed by truncation/rounding - use for testing purposes only.
 c******************************************************************
       subroutine testinv(Phi,resmax,itercg,am,hpin,imass,x,aden,ndiag)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       common/trial/chi(kvol,3),pp(kvol,3)
       common/para/bbb,am3,ibound
@@ -851,7 +855,7 @@ c       solves (Mdagger)Mx=Phi,
 c           NB. no even/odd partitioning
 c******************************************************************
       subroutine congrad(Phi,res,itercg,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       parameter(niterc=kthird*kvol)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -944,7 +948,7 @@ c       solves Mx=x1
 c     (Numerical Recipes section 2.10 pp.70-73)   
 c*******************************************************************
       subroutine measure(psibarpsi,res,aviter,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
       parameter(akappa=0.5)
       parameter(knoise=10)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -1498,12 +1502,15 @@ c
           if(idum.lt.0)then
                idum=1
                do j=1,97
-                  dum=ranf()
+c                 dum=ranf()
+                  dum=rranf()
                enddo
                do j=1,97
-                  v(j)=ranf()
+c                 v(j)=ranf()
+                  v(j)=rranf()
                enddo
-               y=ranf()
+c              y=ranf()
+               y=rranf()
           endif
 c
           j=1+int(97.0*y)
@@ -1515,20 +1522,24 @@ c         stop
 c         endif
           y=v(j)
           rano=y
-          v(j)=ranf()
+c         v(j)=ranf()
+          v(j)=rranf()
           return
           end
 C========================================================================
 C
-          SUBROUTINE RANGET(SEED)
+c         SUBROUTINE RANGET(SEED)
+          SUBROUTINE RRANGET(SEED)
           DOUBLE PRECISION    SEED,     G900GT,   G900ST,   DUMMY
           SEED  =  G900GT()
           RETURN
-          ENTRY RANSET(SEED)
+c         ENTRY RANSET(SEED)
+          ENTRY RRANSET(SEED)
           DUMMY  =  G900ST(SEED)
           RETURN
           END
-          REAL FUNCTION RANF()
+c         REAL FUNCTION RANF()
+          REAL FUNCTION RRANF()
           DOUBLE PRECISION    DRANF,    G900GT,   G900ST
           DOUBLE PRECISION    DS(2),    DM(2),    DSEED
           DOUBLE PRECISION    DX24,     DX48
@@ -1550,7 +1561,8 @@ C
           DS(1)  =  DL
           DR     =  (DS(2)*DX24 + DS(1)) / DX48
           IF(SINGLE)  THEN
-             RANF  =  SNGL(DR)
+c            RANF  =  SNGL(DR)
+             RRANF  =  SNGL(DR)
           ELSE
              DRANF  =  DR
           ENDIF
@@ -1571,7 +1583,7 @@ c     calculates Phi = M*R
 c
 c  pinning term added 5/4/23 - requires imass=1 (SJH)
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=12,ksizet=12,kthird=12)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       common/dirac/gamval(6,4),gamin(6,4)
@@ -1937,7 +1949,7 @@ c     calculates Phi = Mdagger*R
 c
 c  pinning term added 5/4/23 requires imass=1 (SJH)
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=12,ksizet=12,kthird=12)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       common/dirac/gamval(6,4),gamin(6,4)
@@ -2299,7 +2311,7 @@ c***********************************************************************
 c
 c     calculates Phi = M*R
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=12,ksizet=12,kthird=12)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       real chi(ksize,ksize,ksizet,3)
@@ -2698,7 +2710,7 @@ c***********************************************************************
 c
 c     calculates Phi = Mdagger*R
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=12,ksizet=12,kthird=12)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       real chi(ksize,ksize,ksizet,3)

@@ -1,4 +1,5 @@
        program dwf3d
+       USE OMP_LIB
 c*******************************************************************
 c    Rational Hybrid Monte Carlo algorithm for 3d U(1) chiral Heisenberg model 
 c    with N=1 Domain Wall Fermion
@@ -566,11 +567,11 @@ c*****************************************************************m
       complex Phi(kferm)
       complex x
       real*8 anum(0:ndiag),aden(ndiag)
-      complex vtild(kferm),q(kferm),pm1(kferm,ndiag)
-      complex qm1(kferm),p(kferm,ndiag),x3(kferm),r(kferm)
-      complex x1(kferm,ndiag),x2(kferm)
+      complex vtild(kferm),q(kferm)!,pm1(kferm,ndiag)
+      complex qm1(kferm),p(ndiag,kferm),x3(kferm),r(kferm)
+      complex x1(ndiag,kferm),x2(kferm)
       real alpha(ndiag),beta
-      real amu(ndiag),d(ndiag),dm1(ndiag),rho(ndiag),rhom1(ndiag)
+      real amu(ndiag),d(ndiag),dm1(ndiag),rho(ndiag)!,rhom1(ndiag)
 c
 c     write(6,111)
 111   format(' Hi from qmrherm')
@@ -581,11 +582,10 @@ c     write(6,*) resid
 c
 c   initialise r=Phi
 c
-      do i=1,kferm
-         r(i)=Phi(i)
-         qm1(i)=(0.0,0.0)
-         x(i)=anum(0)*Phi(i)
-      enddo
+      r=Phi
+      qm1=(0.0,0.0)
+      x=anum(0)*Phi
+
       beta=0.0
       do i=1,kferm
          beta=beta + real(r(i))**2 + aimag(r(i))**2
@@ -599,9 +599,7 @@ c
 c
 c  Lanczos steps
 c
-      do i=1,kferm
-         q(i)=r(i)/beta
-      enddo
+      q=r/beta
 c
       call dslash(vtild,q,chi,am,hpin,imass)
       call dslashd(x3,vtild,chi,am,hpin,imass)
@@ -611,10 +609,8 @@ c
          alphatild=alphatild+conjg(q(i))*x3(i)
       enddo
 c
-      do i=1,kferm
-         r(i)=x3(i)-alphatild*q(i)-beta*qm1(i)
-         qm1(i)=q(i)
-      enddo
+      r=x3-alphatild*q-beta*qm1
+      qm1=q
 c
       beta0=beta
       beta=0.0
@@ -628,40 +624,42 @@ c
       enddo
 c
       if(iter.eq.1)then
-           do idiag=1,ndiag
-             d(idiag)=alpha(idiag)
-             do i=1,kferm
-              p(i,idiag)=q(i)
-              pm1(i,idiag)=p(i,idiag)
-             enddo
-             rho(idiag)=beta0/alpha(idiag)
-             rhom1(idiag)=rho(idiag)
-             do i=1,kferm
-              x1(i,idiag)=rho(idiag)*q(i)
-             enddo
-           enddo
+        d=alpha
+        rho=beta0/alpha
+        !rhom1=rho
+!$OMP PARALLEL DO
+        do i=1,kferm
+        do idiag=1,ndiag
+        p(idiag,i)=q(i)
+        !pm1(idiag,i)=p(idiag,i)
+        x1(idiag,i)=rho(idiag)*q(i)
+        enddo
+        enddo
       else
-           do idiag=1,ndiag
-             amu(idiag)=beta0/d(idiag)
-             dm1(idiag)=d(idiag)
-             d(idiag)=alpha(idiag)-beta0*amu(idiag)
-             do i=1,kferm
-              p(i,idiag)=q(i)-amu(idiag)*pm1(i,idiag)
-              pm1(i,idiag)=p(i,idiag)
-             enddo
-             rho(idiag)=-amu(idiag)*dm1(idiag)*rhom1(idiag)/d(idiag)
+        amu=beta0/d
+        dm1=d
+        d=alpha-beta0*amu
+        rho=-amu*dm1*rho/d
+        !rhom1=rho
+!$OMP PARALLEL DO
+        do i=1,kferm
+        do idiag=1,ndiag
+          p(idiag,i)=q(i)-amu(idiag)*p(idiag,i) ! pm1 -> p on r.h.s
+          !pm1(idiag,i)=p(idiag,i)
+          x1(idiag,i)=x1(idiag,i)+rho(idiag)*p(idiag,i)
+        enddo
+        enddo
+
+        do idiag=1,ndiag
 c  Convergence criterion (a bit ad hoc for now...)
-             if(idiag.eq.1)then
-               rhomax=abs(phimod*rho(idiag))
-             else
-               if(abs(phimod*rho(idiag)).gt.rhomax)
+        if(idiag.eq.1)then
+          rhomax=abs(phimod*rho(idiag))
+        else
+          if(abs(phimod*rho(idiag)).gt.rhomax)
      &             rhomax=abs(phimod*rho(idiag))
-             endif
-             rhom1(idiag)=rho(idiag)
-             do i=1,kferm
-               x1(i,idiag)=x1(i,idiag)+rho(idiag)*p(i,idiag)
-             enddo
-           enddo
+        endif
+        enddo
+
 c  check to see whether the residual is acceptable for all ndiag....
 c  criterion is a bit ad hoc
 c  relaxing by a factor arelax improves stability and leads to quicker
@@ -681,9 +679,7 @@ c
 c
 c  evaluate solution x=(MdaggerM)^{-0.5}*Phi
       do idiag=1,ndiag
-      do i=1,kferm
-      x(i)=x(i)+anum(idiag)*x1(i,idiag)
-      enddo
+      x=x+anum(idiag)*x1(idiag,:)
       enddo
 c
       else
@@ -693,9 +689,7 @@ c
       do idiag=1,ndiag
 c
 c  X2 = M*X1
-      do i=1,kferm
-      R(i)=x1(i,idiag)
-      enddo
+      R=x1(idiag,:)
       call dslash(X2,R,chi,am,hpin,imass)
       call derivs(R,X2,anum(idiag),imass)
 c
@@ -1597,6 +1591,8 @@ c     write(6,*) 'hi from dslash'
 c
 c     diagonal term
       diag=(3.0-am3)+1.0
+
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do  it=1,ksizet
@@ -1604,7 +1600,7 @@ c     diagonal term
       do  ix=1,ksize
       do ithird=1,kthird
       Phi(ithird,ix,iy,it,idirac,iflavor)=
-     &  diag*R(ithird,ix,iy,it,idirac,iflavor)
+     &   diag*R(ithird,ix,iy,it,idirac,iflavor)
       enddo
       enddo
       enddo
@@ -1616,12 +1612,14 @@ c     Wilson term
       do iflavor=1,2
       do idirac=1,4
 c     mu=1
+
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
       do ithird=1,kthird
       Phi(ithird,ix,iy,it,idirac,iflavor)=
-     &    Phi(ithird,ix,iy,it,idirac,iflavor)
+     &   Phi(ithird,ix,iy,it,idirac,iflavor)
      &    -akappa*(R(ithird,mod(ix,ksize)+1,iy,it,idirac,iflavor)
      &    +R(ithird,mod(ix+ksize-2,ksize)+1,iy,it,idirac,iflavor))
       enddo
@@ -1629,6 +1627,8 @@ c     mu=1
       enddo
       enddo
 c     mu=2
+
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -1642,6 +1642,8 @@ c     mu=2
       enddo
       enddo
 c     mu=0
+
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -1661,6 +1663,8 @@ c  anti-p.b.c. in timelike direction
       if(ibound.eq.-1)then
       do iflavor=1,2
       do idirac=1,4
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1670,6 +1674,8 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
       enddo
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1689,6 +1695,8 @@ c     Dirac term
 c     mu=1
       mu=1
       igork=gamin(mu,idirac)
+
+!$OMP PARALLEL DO
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1705,6 +1713,8 @@ c     mu=1
 c     mu=2
       mu=2
       igork=gamin(mu,idirac)
+
+!$OMP PARALLEL DO
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1721,6 +1731,8 @@ c     mu=2
 c     mu=0
       mu=3
       igork=gamin(mu,idirac)
+
+!$OMP PARALLEL DO
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -1736,11 +1748,14 @@ c     mu=0
       enddo
       enddo
       enddo
+
 c  anti-p.b.c. in timelike direction
       if(ibound.eq.-1)then
       do iflavor=1,2
       do idirac=1,4
       igork=gamin(3,idirac)
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1750,6 +1765,8 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
       enddo
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -1765,6 +1782,8 @@ c  anti-p.b.c. in timelike direction
 c
 c  s-like term exploiting projection
       do iflavor=1,2
+
+!$OMP PARALLEL DO
       do idirac=3,4
       do it=1,ksizet
       do iy=1,ksize
@@ -1778,6 +1797,8 @@ c  s-like term exploiting projection
       enddo
       enddo
       enddo
+
+!$OMP PARALLEL DO
       do idirac=1,2
       do it=1,ksizet
       do iy=1,ksize
@@ -1796,6 +1817,8 @@ c
 c
 c  coupling to chi (couples the two walls)
       if(imass.eq.1)then
+
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1803,6 +1826,8 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -1815,6 +1840,8 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -1843,6 +1870,7 @@ c  pinning term
          enddo
 c
 cc
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1850,6 +1878,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -1862,6 +1892,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -1875,6 +1907,8 @@ cc
          enddo
          enddo
       elseif(imass.eq.3)then
+
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1882,6 +1916,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -1894,6 +1930,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -1907,6 +1945,7 @@ cc
          enddo
          enddo
 cc
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -1914,6 +1953,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -1926,6 +1967,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -1963,6 +2006,8 @@ c     write(6,*) 'hi from dslashd'
 c
 c     diagonal term
       diag=(3.0-am3)+1.0
+
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do  it=1,ksizet
@@ -1982,6 +2027,8 @@ c     Wilson term
       do iflavor=1,2
       do idirac=1,4
 c     mu=1
+
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -1995,6 +2042,8 @@ c     mu=1
       enddo
       enddo
 c     mu=2
+
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2008,6 +2057,8 @@ c     mu=2
       enddo
       enddo
 c     mu=0
+
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2027,6 +2078,8 @@ c  anti-p.b.c. in timelike direction
       if(ibound.eq.-1)then
       do iflavor=1,2
       do idirac=1,4
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2036,6 +2089,8 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
       enddo
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2055,6 +2110,8 @@ c     Dirac term
 c     mu=1
       mu=1
       igork=gamin(mu,idirac)
+
+!$OMP PARALLEL DO
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -2071,6 +2128,8 @@ c     mu=1
 c     mu=2
       mu=2
       igork=gamin(mu,idirac)
+
+!$OMP PARALLEL DO
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -2087,6 +2146,8 @@ c     mu=2
 c     mu=0
       mu=3
       igork=gamin(mu,idirac)
+
+!$OMP PARALLEL DO
       do it=1,ksizet
       do iy=1,ksize
       do ix=1,ksize
@@ -2107,6 +2168,8 @@ c  anti-p.b.c. in timelike direction
       do iflavor=1,2
       do idirac=1,4
       igork=gamin(3,idirac)
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2116,6 +2179,8 @@ c  anti-p.b.c. in timelike direction
       enddo
       enddo
       enddo
+
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2131,6 +2196,8 @@ c  anti-p.b.c. in timelike direction
 c
 c  s-like term exploiting projection
       do iflavor=1,2
+
+!$OMP PARALLEL DO
       do idirac=1,2
       do it=1,ksizet
       do iy=1,ksize
@@ -2144,6 +2211,8 @@ c  s-like term exploiting projection
       enddo
       enddo
       enddo
+
+!$OMP PARALLEL DO
       do idirac=3,4
       do it=1,ksizet
       do iy=1,ksize
@@ -2161,6 +2230,8 @@ c  s-like term exploiting projection
 c
 c  chi term (couples the two walls)
       if(imass.eq.1)then
+
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2168,6 +2239,8 @@ c  chi term (couples the two walls)
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2180,6 +2253,8 @@ c  chi term (couples the two walls)
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -2208,6 +2283,8 @@ c  pinning term
          enddo
 c
 cc
+
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2215,6 +2292,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2227,6 +2306,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -2240,6 +2321,8 @@ cc
          enddo
          enddo
       elseif(imass.eq.3)then
+
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2247,6 +2330,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2259,6 +2344,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -2271,6 +2358,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2278,6 +2367,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2290,6 +2381,8 @@ cc
          enddo
          enddo
          enddo
+
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize

@@ -293,11 +293,9 @@ c**********************************************************************
       y=exp(dH)      
       yav=yav+y 
       yyav=yyav+y*y 
-      if(dH.lt.0.0)then
 c     x=ranf()
       x=rano(yrun,idum)
-      if(x.gt.y)goto 600
-      endif
+      if(x.lt.y)then
 c
 c     step accepted: set s=st
 c
@@ -309,6 +307,7 @@ c
       action=S1/kvol
       gaction=hg/kvol
       paction=hp/kvol
+      endif
 600   continue
       write(11,*) isweep,gaction,paction
       actiona=actiona+action 

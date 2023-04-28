@@ -1570,7 +1570,8 @@ c            RANF  =  SNGL(DR)
           RETURN
           END
 c***********************************************************************
-      subroutine dslash(Phi,R,chi,am,hpin,imass)
+c     subroutine dslash(Phi,R,chi,am,hpin,imass)
+      subroutine dslash_v1(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = M*R
 c
@@ -1985,7 +1986,8 @@ c
       return
       end
 c***********************************************************************
-      subroutine dslashd(Phi,R,chi,am,hpin,imass)
+c     subroutine dslashd(Phi,R,chi,am,hpin,imass)
+      subroutine dslashd_v1(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = Mdagger*R
 c
@@ -2399,7 +2401,8 @@ c
       return
       end
 c***********************************************************************
-      subroutine dslash_v2(Phi,R,chi,am,imass)
+      subroutine dslash(Phi,R,chi,am,hpin,imass)
+c     subroutine dslash_v2(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = M*R
 c
@@ -2418,6 +2421,7 @@ c
 c
 c     diagonal term - Phi scaled by factor of two for now to save flops
       diag=2*((3.0-am3)+1.0)
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do  it=1,ksizet
@@ -2436,6 +2440,7 @@ c
 c     Wilson + Dirac term using specific gamma matrix representation in init
       do iflavor=1,2
 c     mu=1
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2458,6 +2463,7 @@ c
       enddo
       enddo
 c
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2481,6 +2487,7 @@ c
       enddo
       enddo
 c     mu=2
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2503,6 +2510,7 @@ c
       enddo
       enddo
 c
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2526,6 +2534,7 @@ c
       enddo
 c
 c     mu=0
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2549,6 +2558,7 @@ c
       enddo
 c
 c
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2573,6 +2583,7 @@ c
       enddo
 c
 c  Now define Phi with correct normalisation
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do it=1,ksizet
@@ -2590,6 +2601,7 @@ c  Now define Phi with correct normalisation
 c  anti-p.b.c. in timelike direction
       if(ibound.eq.-1)then
       do iflavor=1,2
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2610,6 +2622,7 @@ c
       enddo
       enddo
       enddo
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -2635,6 +2648,7 @@ c
 c
 c  s-like term exploiting projection
       do iflavor=1,2
+!$OMP PARALLEL DO
       do idirac=3,4
       do it=1,ksizet
       do iy=1,ksize
@@ -2648,6 +2662,7 @@ c  s-like term exploiting projection
       enddo
       enddo
       enddo
+!$OMP PARALLEL DO
       do idirac=1,2
       do it=1,ksizet
       do iy=1,ksize
@@ -2666,6 +2681,7 @@ c
 c
 c  coupling to chi (couples the two walls)
       if(imass.eq.1)then
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2673,6 +2689,7 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -2685,6 +2702,7 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2698,6 +2716,7 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
 cc
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2705,6 +2724,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -2717,6 +2737,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2730,6 +2751,7 @@ cc
          enddo
          enddo
       elseif(imass.eq.3)then
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2737,6 +2759,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -2749,6 +2772,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2762,6 +2786,7 @@ cc
          enddo
          enddo
 cc
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -2769,6 +2794,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -2781,6 +2807,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -2798,7 +2825,8 @@ c
       return
       end
 c***********************************************************************
-      subroutine dslashd_v2(Phi,R,chi,am,imass)
+      subroutine dslashd(Phi,R,chi,am,hpin,imass)
+c     subroutine dslashd_v2(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = Mdagger*R
 c
@@ -2817,6 +2845,7 @@ c
 c
 c     diagonal term - Phi is rescaled by factor two for now
       diag=2*((3.0-am3)+1.0)
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do  it=1,ksizet
@@ -2835,6 +2864,7 @@ c
 c     Wilson + Dirac term in one exploiting r=1 term
       do iflavor=1,2
 c     mu=1
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2857,6 +2887,7 @@ c
       enddo
       enddo
 c
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2879,6 +2910,7 @@ c
       enddo
       enddo
 c     mu=2
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2901,6 +2933,7 @@ c
       enddo
       enddo
 c
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2923,6 +2956,7 @@ c
       enddo
       enddo
 c     mu=0
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2945,6 +2979,7 @@ c
       enddo
       enddo
 c
+!$OMP PARALLEL DO
       do  it=1,ksizet
       do  iy=1,ksize
       do  ix=1,ksize
@@ -2969,6 +3004,7 @@ c
       enddo
 c
 c  Now define Phi with correct normalisation
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do it=1,ksizet
@@ -2986,6 +3022,7 @@ c  Now define Phi with correct normalisation
 c  anti-p.b.c. in timelike direction
       if(ibound.eq.-1)then
       do iflavor=1,2
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -3006,6 +3043,7 @@ c
       enddo
       enddo
       enddo
+!$OMP PARALLEL DO
       do iy=1,ksize
       do ix=1,ksize
       do ithird=1,kthird
@@ -3031,6 +3069,7 @@ c
 c
 c  s-like term exploiting projection
       do iflavor=1,2
+!$OMP PARALLEL DO
       do idirac=1,2
       do it=1,ksizet
       do iy=1,ksize
@@ -3044,6 +3083,7 @@ c  s-like term exploiting projection
       enddo
       enddo
       enddo
+!$OMP PARALLEL DO
       do idirac=3,4
       do it=1,ksizet
       do iy=1,ksize
@@ -3061,6 +3101,7 @@ c  s-like term exploiting projection
 c
 c  chi term (couples the two walls)
       if(imass.eq.1)then
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -3068,6 +3109,7 @@ c  chi term (couples the two walls)
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -3080,6 +3122,7 @@ c  chi term (couples the two walls)
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -3093,6 +3136,7 @@ c  chi term (couples the two walls)
          enddo
          enddo
 cc
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -3100,6 +3144,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -3112,6 +3157,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -3125,6 +3171,7 @@ cc
          enddo
          enddo
       elseif(imass.eq.3)then
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -3132,6 +3179,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -3144,6 +3192,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize
@@ -3156,6 +3205,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do it=1,ksizet
          do iy=1,ksize
          do ix=1,ksize
@@ -3163,6 +3213,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=1,2
          do it=1,ksizet
          do iy=1,ksize
@@ -3175,6 +3226,7 @@ cc
          enddo
          enddo
          enddo
+!$OMP PARALLEL DO
          do idirac=3,4
          do it=1,ksizet
          do iy=1,ksize

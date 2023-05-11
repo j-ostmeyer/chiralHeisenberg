@@ -28,7 +28,7 @@ c    actiona: running average of total action
 c
 c                                               SJH January  2023
 c*******************************************************************
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(respbp=0.000001,rescgg=0.000001,rescga=0.000000001)
       parameter(itermax=1000)
       parameter(ndiag=25,ndiagg=12)
@@ -50,10 +50,11 @@ c*******************************************************************
       common/vector/X1(kthird,kvol,4,2)
       common/ranseed/yran,idum
       common/v/v(97)
-      complex Phi(kthird,kvol,4,2),X0(kthird,kvol,4,2)
-      complex R,zi,qq,qbqb
-      complex X1
-      complex a,b
+      complex*16 Phi(kthird,kvol,4,2),X0(kthird,kvol,4,2)
+      complex*16 R,zi,qq,qbqb
+      complex*16 X1
+      complex*16 a,b
+      real*8 chi,chit
       real rano
       real*8 H0,H1,S0,S1,dH,dS,hg,hp
       real*8 seed
@@ -69,7 +70,7 @@ c*******************************************************************
       iread=1
       iwrite=1
       iprint=5
-      iseed=1
+      iseed=0
       icheck=100
       zi=(0.0,1.0)
       tpi=2.0*acos(-1.0)
@@ -89,7 +90,7 @@ c*******************************************************************
       close(25)
 c set a new seed by hand...
       if(iseed.ne.0)then
-      seed=4587658465895.0
+      seed=693764523745.0
       endif
       write(7,*) 'seed: ', seed
 c     call ranset(seed)
@@ -199,6 +200,7 @@ c*******************************************************************
 c  For Phi = {MdaggerM}^0.25 * R
 c
       call qmrherm(R,rescga,itercg,am,hpin,imass,anum4,aden4,ndiag,0)
+c     write(6,*) 'pseudofermion', itercg
       ancgpf=ancgpf+float(itercg)
 c
       do iflavor=1,2
@@ -228,10 +230,10 @@ c
       call hamilton(Phi,
      &      H0,hg,hp,S0,rescga,isweep,am,hpin,imass)
       if(isweep.eq.1) then
-      action=S0/kvol
       gaction=hg/kvol
-      paction=hp/kvol
       endif 
+      action=S0/kvol
+      paction=hp/kvol
 c     goto 501
 c*******************************************************************
 c      half-step forward for p
@@ -432,7 +434,7 @@ c******************************************************************
 c   calculate dSds for sigma fields at each intermediate time
 c******************************************************************
       subroutine force(Phi,res1,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksize*ksize*ksizet)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksize*ksize*ksizet)
       parameter(kferm=kvol*kthird*4*2)
       parameter(ndiagg=12,ndiag=ndiagg)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -444,8 +446,9 @@ c******************************************************************
 c     common/dum1/ R(kthird,kvol,4,2),ps(kvol,2)
       common/remez2g/anum(0:ndiagg),aden(ndiagg),
      &              bnum(0:ndiagg),bden(ndiagg)
-      complex Phi(kferm), X2(kferm)
-      complex X1
+      complex*16 Phi(kferm), X2(kferm)
+      complex*16 X1
+      real*8 chi
       real*8 anum,aden,bnum,bden
 c
 c     write(6,111)
@@ -466,6 +469,7 @@ c
       X2(i)=Phi(i)
       enddo
       call qmrherm(X2,res1,itercg,am,hpin,imass,bnum,bden,ndiag,0)
+c     write(6,*) 'guidance', itercg
       ancg=ancg+float(itercg)
       do i=1,kferm
       X2(i)=X1(i)
@@ -473,6 +477,7 @@ c
 c
 c  evaluates X2dagger * d/dpi[{MdaggerM(m)}^1/2] * X2
       call qmrherm(X2,res1,itercg,am,hpin,imass,anum,aden,ndiag,1)
+c     write(6,*) 'force', itercg
       ancgf=ancgf+float(itercg)
 c
       return
@@ -482,7 +487,7 @@ c   Evaluation of Hamiltonian function
 c******************************************************************
       subroutine hamilton(Phi,
      &       h,hg,hp,s,res2,isweep,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kvol*kthird)
       parameter(ndiag=25)
       parameter(One=1.0)
@@ -492,8 +497,9 @@ c******************************************************************
       common/param/ancg,ancgh,ancgf,ancgpf
       common/vector/ X1(kferm)      
       common/dum1/R(kferm),ps(kvol,2)
-      complex Phi(kferm)
-      complex X1,R
+      complex*16 Phi(kferm)
+      complex*16 X1,R
+      real*8 chi
       real*8 hp,hg,hf,h,s
       real*8 anum,aden,bnum,bden
 c     write(6,111)
@@ -530,6 +536,7 @@ c
       R(i)=Phi(i)
       enddo
       call qmrherm(R,res2,itercg,am,hpin,imass,bnum,bden,ndiag,0)
+c     write(6,*) 'hamilton', itercg
 c
       ancgh=ancgh+float(itercg)
 
@@ -539,8 +546,9 @@ c
 4     continue
 c
       h=hg+hp+hf
-      write(6,*) isweep,':  hg', hg,'   hp', hp,'   hf', hf,
-     &   '   h',h
+c     write(6,*) isweep,':  hg', hg,'   hp', hp,'   hf', hf,
+c    &   '   h',h
+c     write(6,*) isweep,':  hg', hg,'   h', h
       s=hg+hf
 c
       return
@@ -556,21 +564,22 @@ c   iflag=1: evaluates DWF force term
 c*****************************************************************m
       subroutine qmrherm(Phi,res,itercg,am,hpin,
      &               imass,anum,aden,ndiag,iflag)
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
-      parameter(niterc=20000)
+      parameter(niterc=5000)
       common/trial/chi(kvol,3),pp(kvol,3)
       common/sforce/dSdchi(kvol,3)
       common/para/bbb,am3,ibound
       common/vector/x(kferm)
-      complex Phi(kferm)
-      complex x
+      complex*16 Phi(kferm)
+      complex*16 x
+      real*8 chi
       real*8 anum(0:ndiag),aden(ndiag)
-      complex vtild(kferm),q(kferm)!,pm1(kferm,ndiag)
-      complex qm1(kferm),p(ndiag,kferm),x3(kferm),r(kferm)
-      complex x1(ndiag,kferm),x2(kferm)
-      real alpha(ndiag),beta
-      real amu(ndiag),d(ndiag),dm1(ndiag),rho(ndiag)!,rhom1(ndiag)
+      complex*16 vtild(kferm),q(kferm)!,pm1(kferm,ndiag)
+      complex*16 qm1(kferm),p(ndiag,kferm),x3(kferm),r(kferm)
+      complex*16 x1(ndiag,kferm),x2(kferm)
+      real*8 alpha(ndiag),beta,alphatild,beta0,phimod,rhomax
+      real*8 amu(ndiag),d(ndiag),dm1(ndiag),rho(ndiag)!,rhom1(ndiag)
 c
 c     write(6,111)
 111   format(' Hi from qmrherm')
@@ -700,10 +709,10 @@ c
       end
 c**********************************************************************
       subroutine derivs(R,X2,anum,imass)
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       common/sforce/dSdchi(kvol,3)
-      complex R(kthird,kvol,4,2),X2(kthird,kvol,4,2)
-      real*8 anum
+      complex*16 R(kthird,kvol,4,2),X2(kthird,kvol,4,2)
+      real*8 anum,tzi
 c
 c     write(6,111)
 111   format(' Hi from derivs')
@@ -807,14 +816,15 @@ c    tests inversion for each term in partial fraction expansion
 c    accuracy severely curtailed by truncation/rounding - use for testing purposes only.
 c******************************************************************
       subroutine testinv(Phi,resmax,itercg,am,hpin,imass,x,aden,ndiag)
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       common/trial/chi(kvol,3),pp(kvol,3)
       common/para/bbb,am3,ibound
-      complex Phi(kferm)
-      complex vtild(kferm)
-      complex x3(kferm)
-      complex x(kferm,ndiag),x1(kferm),x2(kferm)
+      complex*16 Phi(kferm)
+      complex*16 vtild(kferm)
+      complex*16 x3(kferm)
+      complex*16 x(kferm,ndiag),x1(kferm),x2(kferm)
+      real*8 chi
       real*8 aden(ndiag)
 c
 c     write(6,111)
@@ -848,15 +858,16 @@ c       solves (Mdagger)Mx=Phi,
 c           NB. no even/odd partitioning
 c******************************************************************
       subroutine congrad(Phi,res,itercg,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       parameter(niterc=kthird*kvol)
       common/trial/chi(kvol,3),pp(kvol,3)
       common/para/bbb,am3,ibound
       common/vector/x(kferm)
-      complex Phi(kferm)
-      complex x
-      complex x1(kferm),x2(kferm),p(kferm),r(kferm)
+      complex*16 Phi(kferm)
+      complex*16 x
+      complex*16 x1(kferm),x2(kferm),p(kferm),r(kferm)
+      real*8 chi
 c     write(6,111)
 111   format(' Hi from congrad')
 c
@@ -941,7 +952,7 @@ c       solves Mx=x1
 c     (Numerical Recipes section 2.10 pp.70-73)   
 c*******************************************************************
       subroutine measure(psibarpsi,res,aviter,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(akappa=0.5)
       parameter(knoise=10)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -949,9 +960,10 @@ c*******************************************************************
       common/dirac/gamval(6,4),gamin(6,4)
       common /neighb/id(kvol,3),iu(kvol,3)
       common/vector/xi(kthird,kvol,4,2)
-      complex x(kvol,4,2), Phi(kthird,kvol,4,2)
-      complex xi,gamval
-      complex psibarpsi1,psibarpsi2
+      complex*16 x(kvol,4,2), Phi(kthird,kvol,4,2)
+      complex*16 xi,gamval
+      complex*16 psibarpsi1,psibarpsi2
+      real*8 chi
       real ps(kvol,2),pt(kvol,2)
       real pbp(knoise)
       integer gamin
@@ -1233,7 +1245,7 @@ c*****************************************************************
       subroutine sread
       parameter(ksize=12,ksizet=12,kvol=ksizet*ksize*ksize)
       common/chi/chi(kvol,3),seed
-      real*8 seed
+      real*8 chi, seed
       open(unit=10,file='con',
      1     status='unknown',form='unformatted')
       read (10) chi,seed
@@ -1250,7 +1262,7 @@ c
       subroutine swrite
       parameter(ksize=12,ksizet=12,kvol=ksizet*ksize*ksize)
       common/chi/chi(kvol,3),seed
-      real*8 seed
+      real*8 chi, seed
       open(unit=31,file='con',
      1     status='unknown',form='unformatted')
       write (31) chi,seed
@@ -1272,9 +1284,9 @@ c*******************************************************************
       common/dirac/gamval(6,4),gamin(6,4)
       common/ranseed/yran,idum
       common/v/v(97)
-      complex gamval,one,zi
+      complex*16 gamval,one,zi
       real rano
-      real*8 seed
+      real*8 chi, seed
       integer gamin
 c
 c
@@ -1577,15 +1589,15 @@ c     calculates Phi = M*R
 c
 c  pinning term added 5/4/23 - requires imass=1 (SJH)
 c
-      parameter(ksize=12,ksizet=12,kthird=12)
+      parameter(ksize=12,ksizet=12,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       common/dirac/gamval(6,4),gamin(6,4)
-      real chi(ksize,ksize,ksizet,3)
-      complex spm(ksize,ksize,ksizet)
-      complex Phi(kthird,ksize,ksize,ksizet,4,2),
+      real*8 chi(ksize,ksize,ksizet,3)
+      complex*16 spm(ksize,ksize,ksizet)
+      complex*16 Phi(kthird,ksize,ksize,ksizet,4,2),
      &   R(kthird,ksize,ksize,ksizet,4,2)
-      complex gamval
+      complex*16 gamval
       integer gamin
 c     write(6,*) 'hi from dslash'
 c
@@ -1993,15 +2005,15 @@ c     calculates Phi = Mdagger*R
 c
 c  pinning term added 5/4/23 requires imass=1 (SJH)
 c
-      parameter(ksize=12,ksizet=12,kthird=12)
+      parameter(ksize=12,ksizet=12,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       common/dirac/gamval(6,4),gamin(6,4)
-      real chi(ksize,ksize,ksizet,3)
-      complex spm(ksize,ksize,ksizet)
-      complex Phi(kthird,ksize,ksize,ksizet,4,2),
+      real*8 chi(ksize,ksize,ksizet,3)
+      complex*16 spm(ksize,ksize,ksizet)
+      complex*16 Phi(kthird,ksize,ksize,ksizet,4,2),
      &   R(kthird,ksize,ksize,ksizet,4,2)
-      complex gamval
+      complex*16 gamval
       integer gamin
 c     write(6,*) 'hi from dslashd'
 c
@@ -2406,18 +2418,17 @@ c     subroutine dslash_v2(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = M*R
 c
-      parameter(ksize=12,ksizet=12,kthird=12)
+      parameter(ksize=12,ksizet=12,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
-      real chi(ksize,ksize,ksizet,3)
-      complex spm(ksize,ksize,ksizet)
-      complex Phi(kthird,ksize,ksize,ksizet,4,2),
+      real*8 chi(ksize,ksize,ksizet,3)
+      complex*16 spm(ksize,ksize,ksizet)
+      complex*16 Phi(kthird,ksize,ksize,ksizet,4,2),
      &   R(kthird,ksize,ksize,ksizet,4,2)
-      complex zi,a,b
+      complex*16 zi,a,b
 c     write(6,*) 'hi from dslash'
 c
       zi=cmplx(0.0,1.0)
-      zik=akappa*zi
 c
 c     diagonal term - Phi scaled by factor of two for now to save flops
       diag=2*((3.0-am3)+1.0)
@@ -2715,6 +2726,20 @@ c  coupling to chi (couples the two walls)
          enddo
          enddo
          enddo
+c  pinning term
+         do idirac=3,4
+         Phi(kthird,1,1,1,idirac,1)=Phi(kthird,1,1,1,idirac,1)
+     &    +hpin*R(1,1,1,1,idirac,1)
+         Phi(kthird,1,1,1,idirac,2)=Phi(kthird,1,1,1,idirac,2)
+     &    -hpin*R(1,1,1,1,idirac,2)
+         enddo
+         do idirac=1,2
+         Phi(1,1,1,1,idirac,1)=Phi(1,1,1,1,idirac,1)
+     &    +hpin*R(kthird,1,1,1,idirac,1)
+         Phi(1,1,1,1,idirac,2)=Phi(1,1,1,1,idirac,2)
+     &    -hpin*R(kthird,1,1,1,idirac,2)
+         enddo
+c
 cc
 !$OMP PARALLEL DO
          do it=1,ksizet
@@ -2830,18 +2855,17 @@ c     subroutine dslashd_v2(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = Mdagger*R
 c
-      parameter(ksize=12,ksizet=12,kthird=12)
+      parameter(ksize=12,ksizet=12,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
-      real chi(ksize,ksize,ksizet,3)
-      complex spm(ksize,ksize,ksizet)
-      complex Phi(kthird,ksize,ksize,ksizet,4,2),
+      real*8 chi(ksize,ksize,ksizet,3)
+      complex*16 spm(ksize,ksize,ksizet)
+      complex*16 Phi(kthird,ksize,ksize,ksizet,4,2),
      &   R(kthird,ksize,ksize,ksizet,4,2)
-      complex zi,a,b
+      complex*16 zi,a,b
 c     write(6,*) 'hi from dslashd'
 c
       zi = cmplx(0.0,1.0)
-      zik=akappa*zi
 c
 c     diagonal term - Phi is rescaled by factor two for now
       diag=2*((3.0-am3)+1.0)
@@ -3135,6 +3159,20 @@ c  chi term (couples the two walls)
          enddo
          enddo
          enddo
+c  pinning term
+         do idirac=1,2
+         Phi(kthird,1,1,1,idirac,1)=Phi(kthird,1,1,1,idirac,1)
+     &    +hpin*R(1,1,1,1,idirac,1)
+         Phi(kthird,1,1,1,idirac,2)=Phi(kthird,1,1,1,idirac,2)
+     &    -hpin*R(1,1,1,1,idirac,2)
+         enddo
+         do idirac=3,4
+         Phi(1,1,1,1,idirac,1)=Phi(1,1,1,1,idirac,1)
+     &    +hpin*R(kthird,1,1,1,idirac,1)
+         Phi(1,1,1,1,idirac,2)=Phi(1,1,1,1,idirac,2)
+     &    -hpin*R(kthird,1,1,1,idirac,2)
+         enddo
+c
 cc
 !$OMP PARALLEL DO
          do it=1,ksizet

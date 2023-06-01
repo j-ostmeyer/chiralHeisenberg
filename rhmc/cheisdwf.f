@@ -1245,11 +1245,19 @@ c*****************************************************************
       subroutine sread
       parameter(ksize=12,ksizet=12,kvol=ksizet*ksize*ksize)
       common/chi/chi(kvol,3),seed
+      common/para/beta,am3,ibound
       real*8 chi, seed
-      open(unit=10,file='con',
+      logical :: con_exists
+      inquire(file='con', exist=con_exists)
+      if(con_exists) then
+          open(unit=10,file='con',
      1     status='unknown',form='unformatted')
-      read (10) chi,seed
-      close(10)
+          read (10) chi,seed
+          close(10)
+      else
+          chi = 0.1/beta
+          seed = 122110675517440.
+      end if
 c  ad hoc jiggery-pokery devised to organise fields for pinning
 c     do i=1,kvol
 c     a=chi(i,2)

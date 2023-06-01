@@ -28,7 +28,7 @@ c    actiona: running average of total action
 c
 c                                               SJH January  2023
 c*******************************************************************
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(respbp=0.000001,rescgg=0.000001,rescga=0.000000001)
       parameter(itermax=1000)
       parameter(ndiag=25,ndiagg=12)
@@ -449,7 +449,7 @@ c******************************************************************
 c   calculate dSds for sigma fields at each intermediate time
 c******************************************************************
       subroutine force(Phi,res1,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksize*ksize*ksizet)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksize*ksize*ksizet)
       parameter(kferm=kvol*kthird*4*2)
       parameter(ndiagg=12,ndiag=ndiagg)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -502,7 +502,7 @@ c   Evaluation of Hamiltonian function
 c******************************************************************
       subroutine hamilton(Phi,
      &       h,hg,hp,s,res2,isweep,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kvol*kthird)
       parameter(ndiag=25)
       parameter(One=1.0)
@@ -579,7 +579,7 @@ c   iflag=1: evaluates DWF force term
 c*****************************************************************m
       subroutine qmrherm(Phi,res,itercg,am,hpin,
      &               imass,anum,aden,ndiag,iflag)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       parameter(niterc=5000)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -724,7 +724,7 @@ c
       end
 c**********************************************************************
       subroutine derivs(R,X2,anum,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksizet*ksize*ksize)
       common/sforce/dSdchi(kvol,3)
       complex*16 R(kthird,kvol,4,2),X2(kthird,kvol,4,2)
       real*8 anum,tzi
@@ -831,7 +831,7 @@ c    tests inversion for each term in partial fraction expansion
 c    accuracy severely curtailed by truncation/rounding - use for testing purposes only.
 c******************************************************************
       subroutine testinv(Phi,resmax,itercg,am,hpin,imass,x,aden,ndiag)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       common/trial/chi(kvol,3),pp(kvol,3)
       common/para/bbb,am3,ibound
@@ -873,7 +873,7 @@ c       solves (Mdagger)Mx=Phi,
 c           NB. no even/odd partitioning
 c******************************************************************
       subroutine congrad(Phi,res,itercg,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(kferm=4*2*kthird*kvol)
       parameter(niterc=kthird*kvol)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -967,7 +967,7 @@ c       solves Mx=x1
 c     (Numerical Recipes section 2.10 pp.70-73)   
 c*******************************************************************
       subroutine measure(psibarpsi,res,aviter,am,hpin,imass)
-      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kthird=8,kvol=ksizet*ksize*ksize)
       parameter(akappa=0.5)
       parameter(knoise=10)
       common/trial/chi(kvol,3),pp(kvol,3)
@@ -1258,7 +1258,7 @@ c
       end
 c*****************************************************************
       subroutine sread
-      parameter(ksize=12,ksizet=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kvol=ksizet*ksize*ksize)
       common/chi/chi(kvol,3),seed
       common/para/beta,am3,ibound
       real*8 chi, seed
@@ -1283,7 +1283,7 @@ c     enddo
       end
 c
       subroutine swrite
-      parameter(ksize=12,ksizet=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kvol=ksizet*ksize*ksize)
       common/chi/chi(kvol,3),seed
       real*8 chi, seed
       open(unit=31,file='con',
@@ -1300,7 +1300,7 @@ c     nc=0 cold start
 c     nc=1 hot start
 c     nc<0 no initialization
 c*******************************************************************
-      parameter(ksize=12,ksizet=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kvol=ksizet*ksize*ksize)
       parameter(akappa=0.5)
       common/chi/chi(kvol,3),seed
       common /neighb/id(kvol,3),iu(kvol,3)
@@ -1426,7 +1426,7 @@ c
       end
 c
       subroutine addrc
-      parameter(ksize=12,ksizet=12,kvol=ksizet*ksize*ksize)
+      parameter(ksize=16,ksizet=16,kvol=ksizet*ksize*ksize)
 c*******************************************************************
 c
 c     loads the addresses required during the update
@@ -1448,7 +1448,7 @@ c*******************************************************************
       end
 c
       subroutine ia(i1,i2,i3,nnn)
-      parameter(ksize=12,ksizet=12)
+      parameter(ksize=16,ksizet=16)
 c*******************************************************************
 c
 c     address calculator
@@ -1481,7 +1481,7 @@ c to refresh momenta
 c   Numerical Recipes pp.203
 c**********************************************************************
       subroutine gaussp(ps)
-      parameter(ksize=12,ksizet=12,kvol=ksize*ksize*ksizet)
+      parameter(ksize=16,ksizet=16,kvol=ksize*ksize*ksizet)
       common/trans/tpi 
       common/ranseed/yran,idum
       common/v/v(97)
@@ -1504,7 +1504,7 @@ c to generate pseudofermion fields R
 c   Numerical Recipes pp.203
 c**********************************************************************
       subroutine gauss0(ps)
-      parameter(ksize=12,ksizet=12,kvol=ksize*ksize*ksizet)
+      parameter(ksize=16,ksizet=16,kvol=ksize*ksize*ksizet)
       common/trans/tpi 
       common/ranseed/yran,idum
       common/v/v(97)
@@ -1612,7 +1612,7 @@ c     calculates Phi = M*R
 c
 c  pinning term added 5/4/23 - requires imass=1 (SJH)
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=16,ksizet=16,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       common/dirac/gamval(6,4),gamin(6,4)
@@ -2028,7 +2028,7 @@ c     calculates Phi = Mdagger*R
 c
 c  pinning term added 5/4/23 requires imass=1 (SJH)
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=16,ksizet=16,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       common/dirac/gamval(6,4),gamin(6,4)
@@ -2441,7 +2441,7 @@ c     subroutine dslash_v2(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = M*R
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=16,ksizet=16,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       real*8 chi(ksize,ksize,ksizet,3)
@@ -2878,7 +2878,7 @@ c     subroutine dslashd_v2(Phi,R,chi,am,hpin,imass)
 c
 c     calculates Phi = Mdagger*R
 c
-      parameter(ksize=12,ksizet=12,kthird=8)
+      parameter(ksize=16,ksizet=16,kthird=8)
       parameter(akappa=0.5)
       common/para/beta,am3,ibound
       real*8 chi(ksize,ksize,ksizet,3)

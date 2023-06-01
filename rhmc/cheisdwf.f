@@ -62,6 +62,21 @@ c*******************************************************************
       real*8 anum4,aden4,bnum4,bden4
       real*8 anum2g,aden2g,bnum2g,bden2g
       real cond(3),susc(3),conda(3)
+
+      integer :: findmycpu
+      external findmycpu
+
+      INTEGER :: thread_id,cpu_id,thMX
+
+!$OMP PARALLEL PRIVATE(thread_id,cpu_id,thMX)
+
+      thread_id = OMP_GET_THREAD_NUM()
+      cpu_id = findmycpu()
+      thMX = OMP_GET_MAX_THREADS()
+      PRINT *, "Process: ", thread_id, " on CPU ", cpu_id, " of ", thMX
+
+!$OMP END PARALLEL
+
 c*******************************************************************
 c     input
 c*******************************************************************

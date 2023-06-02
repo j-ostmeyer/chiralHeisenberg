@@ -98,10 +98,10 @@ c*******************************************************************
       open(unit=36,file='remez2',status='unknown')
       open(unit=37,file='remez4',status='unknown')
       open(unit=38,file='remez2g',status='unknown')
+      read(25,*) dt,beta,am3,am,hpin,imass,iterl,iter2
       if(iread.eq.1) then
       call sread
       endif
-      read(25,*) dt,beta,am3,am,hpin,imass,iterl,iter2
       close(25)
 c set a new seed by hand...
       if(iseed.ne.0)then
@@ -1266,12 +1266,12 @@ c*****************************************************************
       inquire(file='con', exist=con_exists)
       if(con_exists) then
           open(unit=10,file='con',
-     1     status='unknown',form='unformatted')
+     1         status='unknown',form='unformatted')
           read (10) chi,seed
           close(10)
       else
-          chi = 0.1/beta
-          seed = 122110675517440.
+        chi = 0.1/beta
+        seed = 693764523745.0
       end if
 c  ad hoc jiggery-pokery devised to organise fields for pinning
 c     do i=1,kvol

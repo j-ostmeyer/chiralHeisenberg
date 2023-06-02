@@ -1,8 +1,9 @@
 FCFLAGS=-O3
 FCLIBS=
 MYFILES=
+MY_C_FILES=mycpu
 
-ifneq ($(filter $(HOSTNAME),d3-login02 d3-login01 viz01.pri.barkla.alces.network),)
+#ifneq ($(filter $(HOSTNAME),d3-login02 d3-login01 viz01.pri.barkla.alces.network),)
   #We are on DIaL
   FC = ifort
   #FCFLAGS += -warn all
@@ -21,11 +22,14 @@ endif
 all: cheisdwf
 
 # MAIN PROGRAM
-cheisdwf: $(MYFILES:%=%.o) cheisdwf.o
+cheisdwf: $(MYFILES:%=%.o) $(MY_C_FILES:%=%.o) cheisdwf.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(FCLIBS)
 
 %.o: %.f Makefile
 	$(FC) $(FCFLAGS) -c $<
+	
+mycpu.o: mycpu.c Makefile
+	icc $(FCFLAGS) -c $<
 
 clean:
 	rm -f cheisdwf *.o *.mod

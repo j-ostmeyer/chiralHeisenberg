@@ -12,8 +12,8 @@ else
   FC = gfortran -std=legacy
   FCFLAGS += -Wall -Wno-unused-label -Wno-unused-dummy-argument -Wno-unused-variable -Wno-surprising
   #FCFLAGS += -g -pg -fprofile-arcs -ftest-coverage #-Og #-fsanitize=address -static-libasan
-  FCLIBS += -lgcov
-  FCFLAGS += -heap-arrays # -frecursive
+  #FCLIBS += -lgcov
+  #FCFLAGS += -heap-arrays # -frecursive
   FCFLAGS += -fopenmp -march=native
   #FCFLAGS += -fdefault-real-8
 endif

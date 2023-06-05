@@ -92,6 +92,16 @@ c*******************************************************************
 c*******************************************************************
 c     end of input
 c*******************************************************************
+c*******************************************************************
+c     open results files for appending
+c*******************************************************************
+      open(unit=11,position='append')
+      open(unit=12,position='append')
+      open(unit=13,position='append')
+      open(unit=14,position='append')
+c*******************************************************************
+c     open other files
+c*******************************************************************
       open(unit=7,file='output',status='unknown')
       open(unit=25,file='midout',status='unknown')
       open(unit=98,file='control',status='unknown')

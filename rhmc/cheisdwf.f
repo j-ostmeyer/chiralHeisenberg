@@ -62,6 +62,7 @@ c*******************************************************************
       real*8 anum4,aden4,bnum4,bden4
       real*8 anum2g,aden2g,bnum2g,bden2g
       real cond(3),susc(3),conda(3)
+      integer :: accepted
 
       integer :: findmycpu
       external findmycpu
@@ -316,16 +317,17 @@ c**********************************************************************
      &       H1,hg,hp,S1,rescga,isweep,am,hpin,imass)
       dH=H0-H1
       dS=S0-S1
-      write(98,*) dH,dS
       y=exp(dH)      
       yav=yav+y 
       yyav=yyav+y*y 
 c     x=ranf()
       x=rano(yrun,idum)
+      accepted=0
       if(x.lt.y)then
 c
 c     step accepted: set s=st
 c
+      accepted=1
       do 2006 ia=1,3
       do 2006 i=1,kvol
       chi(i,ia)=chit(i,ia)
@@ -335,6 +337,7 @@ c
       gaction=hg/kvol
       paction=hp/kvol
       endif
+      write(98,*) dH,dS,accepted
 600   continue
       write(11,*) isweep,gaction,paction
       actiona=actiona+action 

@@ -30,4 +30,6 @@ longruns/
 correlators/
 test_c_tilde/
 shamir-kernel/
+L_*/
+Ls_*/
 README.pdf

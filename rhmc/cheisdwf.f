@@ -105,7 +105,7 @@ c     open other files
 c*******************************************************************
       open(unit=7,file='output',status='unknown')
       open(unit=25,file='midout',status='unknown')
-      open(unit=98,file='control',status='unknown')
+      open(unit=98,file='control',status='unknown',position='append')
       open(unit=36,file='remez2',status='unknown')
       open(unit=37,file='remez4',status='unknown')
       open(unit=38,file='remez2g',status='unknown')

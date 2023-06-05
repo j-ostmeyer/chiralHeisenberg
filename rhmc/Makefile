@@ -3,8 +3,8 @@ FCLIBS=
 MYFILES=
 MY_C_FILES=mycpu
 
-ifneq ($(filter $(HOSTNAME),d3-login02 d3-login01 viz01.pri.barkla.alces.network),)
-  #We are on DIaL
+ifneq ($(findstring login,$(HOSTNAME)),)
+  #We are on DiRAC (or similar HPC facility)
   CC = icc
   FC = ifort
   #FCFLAGS += -warn all

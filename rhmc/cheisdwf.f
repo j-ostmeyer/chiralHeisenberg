@@ -29,7 +29,8 @@ c
 c                                               SJH January  2023
 c*******************************************************************
       parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
-      parameter(respbp=0.000001,rescgg=0.000001,rescga=0.000000001)
+      parameter(respbp=0.000001,rescgg=0.000001,
+     &     rescga=0.000000001,rescgm=0.000000001)
       parameter(itermax=1000)
       parameter(ndiag=25,ndiagg=12)
       parameter(One=1.0)

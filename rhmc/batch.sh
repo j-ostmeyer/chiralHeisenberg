@@ -3,7 +3,7 @@
 #SBATCH --time=36:00:00
 #SBATCH --exclusive=user
 #SBATCH --account=DIRAC-DP137-CPU
-#SBATCH --partition=skylake
+#SBATCH --partition=icelake
 #SBATCH -N 1 -n 1 -c 4
 #SBATCH -m block:block:block
 #SBATCH --dependency=singleton
@@ -11,7 +11,7 @@
 # Set up the environment
 . /etc/profile.d/modules.sh                # Leave this line (enables the module command)
 module purge                               # Removes all modules still loaded
-module load slurm rhel7/global rhel7/default-peta4 intel/bundles/complib/2018.4
+module load slurm rhel7/global rhel7/default-peta4 intel/bundles/complib
 #module load gcc/11
 
 export OMP_NUM_THREADS=4

@@ -385,6 +385,7 @@ c    PLEASE SANITY CHECK
 c
 c  I don't think we're ever going to use this.....
 c     call measure(pbp,respbp,ancgm,am,hpin,imass)
+      call fermion(rescgm,ancgm,am,hpin,imass)
       pbpa=pbpa+pbp
       ancgma=ancgma+ancgm
       ipbp=ipbp+1
@@ -877,6 +878,165 @@ c     write(6,*) idiag, 'itercg = ',itercg, ' residual = ',residual
       enddo
 c
       resmax=sqrt(resmax)
+c
+      return
+      end
+c******************************************************************
+c   Calculate fermion correlator using point/wall sources on domain walls
+c   -matrix inversion via conjugate gradient algorithm
+c       solves Mx=x1
+c     (Numerical Recipes section 2.10 pp.70-73)   
+c*******************************************************************
+      subroutine fermion(res,aviter,am,hpin,imass)
+      parameter(ksize=12,ksizet=12,kthird=8,kvol=ksizet*ksize*ksize)
+      parameter(ksize2=ksize*ksize)
+      parameter(akappa=0.5)
+      common/trial/chi(kvol,3),pp(kvol,3)
+      common/para/beta,am3,ibound
+      common/dirac/gamval(6,4),gamin(6,4)
+      common /neighb/id(kvol,3),iu(kvol,3)
+      common/vector/xi(kthird,kvol,4,2)
+      common/ranseed/yran,idum
+      common/v/v(97)
+      complex*16 x(kvol),Phi(kthird,kvol,4,2)
+      complex*16 xi,gamval
+      real*8 chi
+      complex prop00(kvol,3:4,1:2,2),prop0L(kvol,3:4,3:4,2)
+      complex cferm1(0:ksizet-1,2), cferm2(0:ksizet-1,2)
+      real ps(kvol,2)
+      real rano
+      integer gamin
+c     write(6,*) 'hi from fermion'
+c      
+      nsource=10
+      nsmear=10
+      c=0.25
+      iter=0
+c
+      do if=1,2
+      do it=0,ksizet-1
+      cferm1(it,if)=(0.0,0.0)
+      cferm2(it,if)=(0.0,0.0)
+      enddo
+      enddo
+c
+      do ksource=1,nsource
+c
+c   random location for +m source
+c     ixxx=int(ksize*rano(yran,idum))+1
+c     iyyy=int(ksize*rano(yran,idum))+1
+      ittt=int(ksizet*rano(yran,idum))+1
+c     isource=ixxx+ksize*((iyyy-1)+ksize*(ittt-1))
+c     write(6,*) 'source: ',ixxx,iyyy,ittt, isource
+c
+c  set source flavor
+      ifsource = 1
+c  loop over Dirac index of source...   
+      do idsource=3,4
+c
+      do iflavor=1,2
+      do idirac=1,4
+      do i=1,kvol
+      do ithird=1,kthird
+      xi(ithird,i,idirac,iflavor)=(0.0,0.0)
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c  source on domain wall at ithird=1
+      do i=1,kvol
+      x(i)=(0.0,0.0)
+      enddo
+c  wall source
+      ioff=(ittt-1)*ksize2
+      do i=1,ksize2
+      x(i+ioff)=(1.0,0.0)/ksize2
+      enddo
+c
+c  point source at fixed site, spin, flavor...
+c     write(6,*) 'source: ',isource,idsource,ifsource
+c     x(isource)=(1.0,0.0)
+c
+c   xi = x  on DW at ithird=1
+c
+      do i=1,kvol
+      xi(1,i,idsource,ifsource)=x(i)
+      enddo
+c
+c Phi= Mdagger*xi
+c
+      call dslashd(Phi,xi,chi,am,hpin,imass)
+c
+c  preconditioning (no,really)
+c     call dslashd(xi,Phi,chi,am,hpin,imass)
+      do iflavor=1,2
+      do idirac=1,4
+      do i=1,kvol
+      do ithird=1,kthird
+      xi(ithird,i,idirac,iflavor)=Phi(ithird,i,idirac,iflavor)
+      enddo
+      enddo
+      enddo
+      enddo
+c  
+c xi= (MdaggerM)**-1 * Phi 
+c
+      call congrad(Phi,res,itercg,am,hpin,imass) 
+      iter=iter+itercg
+c
+      do if=1,2
+      do idsink=1,2
+      idsink2=idsink+2
+      do i=1,kvol
+      prop00(i,idsource,idsink,if)=xi(1,i,idsink,if)
+      prop0L(i,idsource,idsink2,if)=xi(kthird,i,idsink2,if)
+      enddo
+      enddo
+      enddo
+c
+c  end loop on source Dirac index....
+      enddo
+c
+c    now the fermion propagator
+c  = tr{ P_-*Psi(0,1)Psibar(x,Ls) + gamma_0*P_-*Psi(0,1)Psibar(x,1) }
+      do idd=3,4
+      do it=0,ksizet-1
+      itt=mod((ittt+it-1),ksizet)+1
+c correct for apbc
+      if(itt.ge.ittt)then
+        isign=1
+      else
+        isign=ibound
+      endif
+c
+      ioff=(itt-1)*ksize2
+      do if=1,2
+      do i=1,ksize2
+      cferm1(it,if)=cferm1(it,if)
+     & +isign*akappa*prop0L(i+ioff,idd,idd,if)
+      cferm2(it,if)=cferm2(it,if)
+     & +isign*gamval(3,idd)*prop00(i+ioff,idd,gamin(3,idd),if)
+      enddo
+      enddo
+      enddo
+      enddo
+c
+c  finish loop over sources
+      enddo
+c
+      do it=0,ksizet-1
+      cferm1(it,1) = cferm1(it,1)/nsource
+      cferm2(it,1) = cferm2(it,1)/nsource
+      cferm1(it,2) = cferm1(it,2)/nsource
+      cferm2(it,2) = cferm2(it,2)/nsource
+      write(5001,*) it, real(cferm1(it,1)), aimag(cferm1(it,1))
+      write(5011,*) it, real(cferm2(it,1)), aimag(cferm2(it,1))
+      write(5002,*) it, real(cferm1(it,2)), aimag(cferm1(it,2))
+      write(5012,*) it, real(cferm2(it,2)), aimag(cferm2(it,2))
+      enddo
+c
+      aviter=float(iter)/(2*nsource)
 c
       return
       end

@@ -643,6 +643,7 @@ c
       call dslashd(x3,vtild,chi,am,hpin,imass)
 c
       alphatild=0.0
+!$OMP PARALLEL DO REDUCTION(+:alphatild)
       do i=1,kferm
          alphatild=alphatild+conjg(q(i))*x3(i)
       enddo
@@ -652,6 +653,7 @@ c
 c
       beta0=beta
       beta=0.0
+!$OMP PARALLEL DO REDUCTION(+:beta)
       do i=1,kferm
          beta=beta + real(r(i))**2 + aimag(r(i))**2
       enddo
@@ -935,6 +937,7 @@ c  set source flavor
 c  loop over Dirac index of source...   
       do idsource=3,4
 c
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do i=1,kvol
@@ -971,6 +974,7 @@ c
 c
 c  preconditioning (no,really)
 c     call dslashd(xi,Phi,chi,am,hpin,imass)
+!$OMP PARALLEL DO
       do iflavor=1,2
       do idirac=1,4
       do i=1,kvol
@@ -1069,10 +1073,11 @@ c
 c
 c   initialise p=x, r=Phi(na)
 c
-      do 2 i=1,kferm
+!$OMP PARALLEL DO
+      do i=1,kferm
       p(i)=x(i)
       r(i)=Phi(i)
-2     continue
+      enddo
       betad=1.0
       alpha=1.0
 51    alphad=0.0
@@ -1086,16 +1091,18 @@ c
 c   alpha=(r,r)/(p,(Mdagger)Mp)
 c 
       alphad=0.0
-      do 31 i=1,kferm
+!$OMP PARALLEL DO REDUCTION(+:alphad)
+      do i=1,kferm
       alphad=alphad + real(x1(i))**2 + aimag(x1(i))**2
-31    continue
+      enddo
       alpha=alphan/alphad
 c      
 c   x=x+alpha*p
 c
-      do 4 i=1,kferm
+!$OMP PARALLEL DO
+      do i=1,kferm
       x(i)=x(i)+alpha*p(i)
-4     continue
+      enddo
 201   continue
 c     
 c   x2=(Mdagger)x1=(Mdagger)Mp
@@ -1104,16 +1111,18 @@ c
 c
 c   r=r-alpha*(Mdagger)Mp
 c
-      do 6 i=1,kferm
+!$OMP PARALLEL DO
+      do i=1,kferm
       r(i)=r(i)-alpha*x2(i)
-6     continue
+      enddo
 c
 c   beta=(r_k+1,r_k+1)/(r_k,r_k)
 c
       betan=0.0 
-      do 61 i=1,kferm
+!$OMP PARALLEL DO REDUCTION(+:betan)
+      do i=1,kferm
       betan=betan + real(r(i))**2 + aimag(r(i))**2 
-61    continue 
+      enddo
       beta=betan/betad
       betad=betan
       alphan=betan
@@ -1122,9 +1131,10 @@ c
 c
 c   p=r+beta*p
 c
-      do 7 i=1,kferm
+!$OMP PARALLEL DO
+      do i=1,kferm
       p(i)=r(i)+beta*p(i)
-7     continue
+      enddo
       if(betan.lt.resid) goto 8
 1     continue
       write(6,1000)

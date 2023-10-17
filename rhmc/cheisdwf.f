@@ -386,7 +386,7 @@ c    PLEASE SANITY CHECK
 c
 c  I don't think we're ever going to use this.....
 c     call measure(pbp,respbp,ancgm,am,hpin,imass)
-c      call fermion(rescgm,ancgm,am,hpin,imass)
+      call fermion(rescgm,ancgm,am,hpin,imass)
       pbpa=pbpa+pbp
       ancgma=ancgma+ancgm
       ipbp=ipbp+1

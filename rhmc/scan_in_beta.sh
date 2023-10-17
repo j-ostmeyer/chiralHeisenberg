@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for length in 8 12 16 20 24 ; do
+for length in 16 20 24 ; do
   echo $length
 
   touch mycpu.c
@@ -27,12 +27,13 @@ for length in 8 12 16 20 24 ; do
       dir="L_${length}_Ls_${Ls}_b_${b}"
       #rm -rf $dir
       mkdir -p $dir
+      rm -f $dir/*con*
       cp _con condp $dir
       cp remez* batch.sh $dir
       cp cheisdwf "${dir}/xcheis"
       cd $dir
 
-      cp condp con
+      #cp condp con
 
       echo "0.0625   ${b} 1.0  0.00   0.    1    ${Ls}     5000" > midout
       echo "dt     beta am3    am    h0    imass iterl  iter2" >> midout

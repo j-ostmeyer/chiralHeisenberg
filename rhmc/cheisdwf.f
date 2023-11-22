@@ -911,8 +911,7 @@ c*******************************************************************
       integer gamin
 c     write(6,*) 'hi from fermion'
 c      
-      nsource=10
-      nsmear=10
+      integer, parameter :: nsource = 5
       c=0.25
       iter=0
 c
@@ -923,12 +922,15 @@ c
       enddo
       enddo
 c
+      ittt0 = int(ksizet*rano(yran,idum))+1
+c      
       do ksource=1,nsource
 c
 c   random location for +m source
 c     ixxx=int(ksize*rano(yran,idum))+1
 c     iyyy=int(ksize*rano(yran,idum))+1
-      ittt=int(ksizet*rano(yran,idum))+1
+c     ittt=int(ksizet*rano(yran,idum))+1
+      ittt = mod(ittt0 + ksource*(ksizet/nsource), ksizet) + 1
 c     isource=ixxx+ksize*((iyyy-1)+ksize*(ittt-1))
 c     write(6,*) 'source: ',ixxx,iyyy,ittt, isource
 c

@@ -11,7 +11,8 @@
 # Set up the environment
 . /etc/profile.d/modules.sh                # Leave this line (enables the module command)
 module purge                               # Removes all modules still loaded
-module load slurm rhel7/global rhel7/default-peta4 intel/bundles/complib
+#module load slurm rhel7/global rhel7/default-peta4 intel/bundles/complib
+module load rhel8/slurm rhel8/global rhel8/default-icl intel/bundles/complib
 #module load gcc/11
 
 export OMP_NUM_THREADS=4

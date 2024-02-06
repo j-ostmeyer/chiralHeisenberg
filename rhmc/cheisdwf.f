@@ -101,6 +101,10 @@ c*******************************************************************
       open(unit=12,position='append')
       open(unit=13,position='append')
       open(unit=14,position='append')
+      open(unit=5001,position='append')
+      open(unit=5011,position='append')
+      open(unit=5002,position='append')
+      open(unit=5012,position='append')
 c*******************************************************************
 c     open other files
 c*******************************************************************
@@ -1042,6 +1046,11 @@ c
       write(5002,*) it, real(cferm1(it,2)), aimag(cferm1(it,2))
       write(5012,*) it, real(cferm2(it,2)), aimag(cferm2(it,2))
       enddo
+
+      flush(5001)
+      flush(5011)
+      flush(5002)
+      flush(5012)
 c
       aviter=float(iter)/(2*nsource)
 c

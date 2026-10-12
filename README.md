@@ -15,25 +15,25 @@ The raw data produced by the simulation program is found in the files
 accompanying paper.  The data is arranged in rows for each ensemble generated.
 The columns are labelled as follows:
 
-L:  the linear extent of the spacetime volume L^3.
-L_s:  the domain wall separation
-beta:  the inverse coupling parameter 
+L:  the linear extent of the spacetime volume L^3\
+L_s:  the domain wall separation\
+beta:  the inverse coupling parameter
 
 no. meas: the number of measurements 
 
-avg: mean order parameter |Phi|
+avg: mean order parameter |Phi|\
 error:   standard error in |Phi|
 
-tau_int:  integrated autocorrelation time
+tau_int:  integrated autocorrelation time\
 acc:   RHMC acceptance rate
 
-<phi^2>:   mean square order parameter
+<phi^2>:   mean square order parameter\
 d_<phi^2>:   standard error in <phi^2>
 
-<(phi^2)^2>:  fourth moment of order parameter
+<(phi^2)^2>:  fourth moment of order parameter\
 d_<(phi^2)^2>: standard error in <(phi^2)^2)>
 
-bind. cum.:   Binder cumulant
+bind. cum.:   Binder cumulant\
 d_bind. cum: standard error in Binder cumulant
 
 ## Fermion Propagator Data
@@ -44,16 +44,17 @@ The correlators $S_\gamma$ and $S_m$ defined in Eq. (19) of the paper are writte
 - $(S_\gamma)_{12}$ :	*fort.5012*
 - $(S_m)_{11}$ :	*fort.5001*
 - $(S_m)_{12}$ :	*fort.5002*
+
 The streams are collected in directories named according to the ensemble parameters, e.g. `L_12_Ls_24_b_0.475`. All data is packed into the file 'fermion_data.tar'
 
 Results from fits using the Truncated Hankel Correlator (THC) method are found in the files `thc.csv` and `thc_coeffs.csv`.
 The columns are labelled as follows:
 
-beta:  the inverse coupling parameter 
-L,Lt:  the linear extent of the space-time volume $L^3=L^2 L_t$.
+beta:  the inverse coupling parameter\
+L,Lt:  the linear extent of the space-time volume $L^3=L^2 L_t$\
 L_s:  the domain wall separation
 
 channel: fit ansatz, only 6 (THC) relevant for this paper
 
-eff. mass: ground state energy shown in Fig. 8 of the paper (`thc.csv`) or ground state contribution to the slope shown in Fig. 9 of the paper (`thc_coeffs.csv`)
+eff. mass: ground state energy shown in Fig. 8 of the paper (`thc.csv`) or ground state contribution to the slope shown in Fig. 9 of the paper (`thc_coeffs.csv`)\
 stat. err: corresponding statistical error

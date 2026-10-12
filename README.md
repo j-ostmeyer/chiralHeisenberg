@@ -30,7 +30,7 @@ acc:   RHMC acceptance rate
 <phi^2>:   mean square order parameter
 d_<phi^2>:   standard error in <phi^2>
 
-<(phi^2)^2>:  fouth moment of order parameter
+<(phi^2)^2>:  fourth moment of order parameter
 d_<(phi^2)^2>: standard error in <(phi^2)^2)>
 
 bind. cum.:   Binder cumulant
@@ -40,12 +40,10 @@ d_bind. cum: standard error in Binder cumulant
 
 
 The correlators $S_\gamma$ and $S_m$ defined in Eq. (19) of the paper are written as complex numbers into the following output streams:
-\begin{eqnarray*}
-(S_\gamma)_{11}&:&\;\;\;{\tt fort.5011}\\
-(S_\gamma)_{12}&:&\;\;\;{\tt fort.5012}\\
-(S_m)_{11}&:&\;\;\;{\tt fort.5001}\\
-(S_m)_{12}&:&\;\;\;{\tt fort.5002}
-\end{eqnarray*}
+- $(S_\gamma)_{11}$ :	*fort.5011*
+- $(S_\gamma)_{12}$ :	*fort.5012*
+- $(S_m)_{11}$ :	*fort.5001*
+- $(S_m)_{12}$ :	*fort.5002*
 The streams are collected in directories named according to the ensemble parameters, e.g. `L_12_Ls_24_b_0.475`. All data is packed into the file 'fermion_data.tar'
 
 Results from fits using the Truncated Hankel Correlator (THC) method are found in the files `thc.csv` and `thc_coeffs.csv`.
